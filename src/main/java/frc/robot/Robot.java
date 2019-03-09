@@ -10,6 +10,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID.Hand;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -19,10 +21,21 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * project.
  */
 public class Robot extends TimedRobot {
+  enum OurBots
+  {
+    PEANUT, WM2019_BAG, WM2019_2ND //The peanut is Russ' test bot. The bag bot is the one in the bag. The 2nd is the spare bot
+  }
+  OurBots selectedBot = OurBots.WM2019_2ND; //set the bot to the one you are working with
+
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
+
+  HardwareMap hMap = new HardwareMap();   //This defines what inputs and outputs are connectedd to roborio
+  DriveTrain driveTrain = new DriveTrain(selectedBot);
+  public static final int xboxPort = 0;
+  public XboxController xCon = new XboxController(xboxPort);
 
   /**
    * This function is run when the robot is first started up and should be
@@ -86,6 +99,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
+    linkJoyStickToDrive();
   }
 
   /**
@@ -93,5 +107,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void testPeriodic() {
+  }
+
+  public void linkJoyStickToDrive()
+  {
+    driveTrain.drive(xCon.getY(Hand.kLeft), xCon.getY(Hand.kRight));
   }
 }
