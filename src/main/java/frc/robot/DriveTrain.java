@@ -8,8 +8,7 @@
 package frc.robot;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
-//import edu.wpi.first.wpilibj.VictorSP;
-import edu.wpi.first.wpilibj.Spark;
+import edu.wpi.first.wpilibj.VictorSP;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import frc.robot.Robot.OurBots;
 import edu.wpi.first.wpilibj.*;
@@ -31,16 +30,16 @@ public class DriveTrain
   WPI_VictorSPX   driveRightFront_bag;
   WPI_VictorSPX   driveRightRear_bag;
   // 2nd Bot  
-  Spark         driveLeftFront_2nd; //Use Spark for Victor SP as generic PWM object
-  WPI_TalonSRX	driveLeftRear_2nd;
+  VictorSP      driveLeftFront_2nd; //this one speed controller is PWM 
+  WPI_TalonSRX	driveLeftRear_2nd;   
   WPI_TalonSRX	driveRightFront_2nd;
-  WPI_TalonSRX	driveRightRear_2nd;
+  WPI_TalonSRX	driveRightRear_2nd; 
   // general
   SpeedController leftSpeedGroup; 
   SpeedController rightSpeedGroup;
   DifferentialDrive diffDrive;
   
-  public DriveTrain(OurBots selectedBot)
+  public DriveTrain(OurBots selectedBot)//constructor
   {
     switch(selectedBot)
     {
@@ -50,7 +49,7 @@ public class DriveTrain
         diffDrive = new DifferentialDrive(driveLeft_peanut,driveRight_peanut);
         break;
       case WM2019_2ND:
-        driveLeftFront_2nd  = new Spark(0);//Used Spark for Victor SP as generic PWM object
+        driveLeftFront_2nd  = new VictorSP(0);
         driveLeftRear_2nd   = new WPI_TalonSRX(1);
         driveRightFront_2nd = new WPI_TalonSRX(2);
         driveRightRear_2nd  = new WPI_TalonSRX(3);
