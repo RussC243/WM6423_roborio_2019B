@@ -61,7 +61,7 @@ public class DriveTrain
       default:
         driveLeftFront_bag	= new WPI_VictorSPX(0);	
         driveLeftRear_bag 	= new WPI_VictorSPX(1);
-        driveRightFront_bag	= new WPI_VictorSPX(2);
+        driveRightFront_bag	= new WPI_VictorSPX(2); 
         driveRightRear_bag	= new WPI_VictorSPX(3);
         leftSpeedGroup = new SpeedControllerGroup(driveLeftFront_bag, driveLeftRear_bag);; 
         rightSpeedGroup = new SpeedControllerGroup(driveRightFront_bag, driveRightRear_bag);;
