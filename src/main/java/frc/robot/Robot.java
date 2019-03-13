@@ -4,15 +4,12 @@
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
-
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.GenericHID.Hand;
-
+import edu.wpi.first.wpilibj.Joystick;
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the TimedRobot
@@ -31,12 +28,13 @@ public class Robot extends TimedRobot {
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
-
-  HardwareMap hMap = new HardwareMap();   //This defines what inputs and outputs are connectedd to roborio
-  DriveTrain driveTrain = new DriveTrain(selectedBot);
-  public static final int xboxPort = 0;
-  public XboxController xCon = new XboxController(xboxPort);
-
+  
+  Joystick        js  = new Joystick(0);     //popular and generic, IZT brand joystick
+  HardwareMap     hm  = new HardwareMap();   //This defines what inputs and outputs are connectedd to roborio
+  DriveTrain      dt  = new DriveTrain(selectedBot);
+  ArmWrist        aw  = new ArmWrist(selectedBot);
+  Pneumatics      pn  = new Pneumatics(selectedBot);
+  
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -94,12 +92,22 @@ public class Robot extends TimedRobot {
     }
   }
 
+  @Override
+  public void teleopInit() {
+    System.out.printf("teleopInit\n"); 
+    aw.armPositionTarget = 0.1234;
+    aw.wristPositionTarget = 0.1234; 
+  }
+
   /**
    * This function is called periodically during operator control.
    */
   @Override
   public void teleopPeriodic() {
     linkJoyStickToDrive();
+    linkJoyStickToArmWrist();
+    linkJoyStickToPneumatics();
+    aw.processPIDs();
   }
 
   /**
@@ -111,6 +119,16 @@ public class Robot extends TimedRobot {
 
   public void linkJoyStickToDrive()
   {
-    driveTrain.drive(xCon.getY(Hand.kLeft), xCon.getY(Hand.kRight));
+    dt.drive(js.getRawAxis(hm.axisLeftY),js.getRawAxis(hm.axisRightY)); //left and right veritcal axis
+  }
+  public void linkJoyStickToArmWrist()
+  {
+    aw.upDownManual(js.getRawButton(hm.buttonBumperRight), js.getRawButton(hm.buttonBumperLeft));
+    // aw.upDownCycle( js.getRawButton(hm.buttonX), js.getRawButton(hm.buttonA)); 
+    // aw.upDownWristOnly(js.getPOV());
+  }
+  public void linkJoyStickToPneumatics()
+  {
+    // pn.upDown(js.getRawButton(hm.buttonB), js.getRawButton(hm.buttonY));
   }
 }

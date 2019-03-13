@@ -22,8 +22,8 @@ public class DriveTrain
   //HardwareMap hMap = new HardwareMap();
   //Declare all possible objects here and instantiate what is needed for each bot in constructor
   //Peanut Bot
-  WPI_VictorSPX   driveLeft_peanut;
-  WPI_TalonSRX    driveRight_peanut;
+  Spark           driveLeft_peanut;
+  Spark           driveRight_peanut;
   //Bag Bot 
   WPI_VictorSPX   driveLeftFront_bag;	
   WPI_VictorSPX   driveLeftRear_bag;
@@ -44,8 +44,8 @@ public class DriveTrain
     switch(selectedBot)
     {
       case PEANUT:
-        driveLeft_peanut	= new WPI_VictorSPX(0); //retain bag bot ID
-        driveRight_peanut	= new WPI_TalonSRX(4);  //retain bag bot ID
+        driveLeft_peanut	= new Spark(0);
+        driveRight_peanut	= new Spark(1);
         diffDrive = new DifferentialDrive(driveLeft_peanut,driveRight_peanut);
         break;
       case WM2019_2ND:

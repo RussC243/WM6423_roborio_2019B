@@ -6,9 +6,14 @@
 /*----------------------------------------------------------------------------*/
 
 package frc.robot;
+import frc.robot.Robot.OurBots;
 
 /**
  * Add your docs here.
  */
-public class Pneumatics {
+public class Pneumatics 
+{
+    public Pneumatics(OurBots selectedBot)//constructor
+    {
+    }
 }
