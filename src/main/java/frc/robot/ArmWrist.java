@@ -37,8 +37,8 @@ public class ArmWrist {
 
   //at 20mS per update, changing target from zero to full up or full down would take 1000*0.020 = 20 sec
   //So to speed the motion we will change target by the factor every 20mS.
-  int FAST_MOTION_FACTOR  = 1; //20 sec divided by 10 = 2 sec for full travel up or down from center position
-  double ARM_FULL            =  1000; //range is -1000 to +1000
+  int FAST_MOTION_FACTOR      = 1; //20 sec divided by 10 = 2 sec for full travel up or down from center position
+  double ARM_FULL             = 1000; //range is -1000 to +1000
   double WRIST_FULL           = 1000;
   double armPositionCurrent   = 0;
   double armPositionTarget    = 0;
@@ -50,12 +50,12 @@ public class ArmWrist {
   double WRIST_DOWN_LIMIT    = -300;
    
   MiniPID pidArm;
-  double P_ARM = 0.5;
+  double P_ARM = 0.55;
   double I_ARM = 0.0;
   double D_ARM = 0.0;
   
   MiniPID pidWrist;
-  double P_WRIST = 0.5;
+  double P_WRIST = 0.55;
   double I_WRIST = 0.0;
   double D_WRIST = 0.0;
   
@@ -67,20 +67,19 @@ public class ArmWrist {
     //arm PID
     pidArm = new MiniPID(P_ARM,I_ARM,D_ARM);
     pidArm.setSetpoint(0.0);            //center of travel
-    pidArm.setSetpointRange(ARM_FULL);  //MiniPID class sets range to +/- the value set here 
-    pidArm.setOutputLimits(ARM_DOWN_LIMIT,ARM_UP_LIMIT);
+    //pidArm.setSetpointRange(ARM_FULL);  //MiniPID class sets range to +/- the value set here 
+    //pidArm.setOutputLimits(ARM_DOWN_LIMIT,ARM_UP_LIMIT);
     pidArm.setDirection(true); //true is reversed
     pidArm.reset();            //remove any I term build up from last time we used the PID
+    
     //wrist PID
     pidWrist = new MiniPID(P_WRIST,I_WRIST,D_WRIST);
     pidWrist.setSetpoint(0.0);      
-    pidWrist.setSetpointRange(WRIST_FULL);
-    pidWrist.setOutputLimits(WRIST_DOWN_LIMIT,ARM_UP_LIMIT);
-    pidArm.setDirection(true); 
+    pidArm.setDirection(true); //true is reversed
     pidWrist.reset();  
     // pots
-    potArm   = new AnalogPotentiometer(0,2000,0); //channel, range, offset; [0 to 2000] will map to [-1000 to +1000] when read
-    potWrist = new AnalogPotentiometer(1,2000,0); 
+    potArm   = new AnalogPotentiometer(0, 2 * ARM_FULL, 0); //channel, range, offset; [0 to 2000] will map to [-1.0 to +1.0] when read
+    potWrist = new AnalogPotentiometer(1, 2 * WRIST_FULL, 0); 
 
     switch(selectedBot)
     {
@@ -141,16 +140,17 @@ public class ArmWrist {
   public void processPIDs()
   {
     //----------------------------------------------------------
-    armPositionCurrent   = potArm.get()  - ARM_FULL;  //Subtracting ARM_FULL maps [0 to 2000] to [-1000 to 1000]
-    wristPositionCurrent = potWrist.get() - WRIST_FULL; 
+    armPositionCurrent   = potArm.get()/ARM_FULL  - 1.0;  //map [0 to 2.0] to [-1.0 to 1.0]
+    wristPositionCurrent = potWrist.get()/WRIST_FULL - 1.0; 
     //For each PID cycle, pass in the current and target positions. 
     //The needed drive to eliminate error is returned from the PID.
     //Simple as that :)
-    double pidOutputArm   = pidArm.getOutput(armPositionCurrent, armPositionTarget); //output range is -1000 to +1000
-    double pidOutputWrist = pidWrist.getOutput(wristPositionCurrent, wristPositionTarget);
-    if(printCounter%50 == 0)//print every 20*25 = 500mS
+    //sensor target
+    double pidOutputArm   = pidArm.getOutput(armPositionCurrent, armPositionTarget/ARM_FULL); //output range is -1000 to +1000
+    double pidOutputWrist = pidWrist.getOutput(wristPositionCurrent, wristPositionTarget/WRIST_FULL);
+    if(printCounter%10 == 0)//print every 20*10 = 200mS
     {
-      System.out.printf("Curr:targ:PidOut - Arm  %.0f %.0f %.0f   wrist %.0f %.0f %.0f\n", 
+      System.out.printf("C:T:P %.0f : %.0f : %.3f  :  %.0f : %.0f : %.4f\n", 
                                               armPositionCurrent,
                                               armPositionTarget,
                                               pidOutputArm,  
@@ -166,13 +166,13 @@ public class ArmWrist {
     switch(selectedBot_local)
     {
       case PEANUT:
-        armGroup.set(pidOutputArm/ARM_FULL);
+        armGroup.set(pidOutputArm);
         //Lowly peanut has no wrist
         break;
       case WM2019_BAG:
       case WM2019_2ND:
-        armGroup.set(pidOutputArm/ARM_FULL);
-        wrist.set(pidOutputWrist/WRIST_FULL);     
+        armGroup.set(pidOutputArm);
+        wrist.set(pidOutputWrist);     
         break;
     }
   }

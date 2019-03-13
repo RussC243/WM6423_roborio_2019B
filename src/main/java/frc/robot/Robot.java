@@ -22,7 +22,7 @@ public class Robot extends TimedRobot {
   {
     PEANUT, WM2019_BAG, WM2019_2ND //The peanut is Russ' test bot. The bag bot is the one in the bag. The 2nd is the spare bot
   }
-  OurBots selectedBot = OurBots.WM2019_2ND; //set the bot to the one you are working with
+  OurBots selectedBot = OurBots.PEANUT; //set the bot to the one you are working with
 
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
