@@ -109,8 +109,24 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {
   }
 
+  //Following functions are commands linking a subsystem to joysticks/main robot class. 
   public void linkJoyStickToDrive()
   {
     driveTrain.drive(xCon.getY(Hand.kLeft), xCon.getY(Hand.kRight));
+  }
+
+  public void linkJoyStickButtonsToArmWrist() 
+  {
+    //left_button - manual arm down. Right_button - manual arm up. 
+
+    
+  }
+
+  public void linkJoyStickButtonsToPnuematics() 
+  {
+      
+    
+
+
   }
 }

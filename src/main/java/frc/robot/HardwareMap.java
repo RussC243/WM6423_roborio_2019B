@@ -26,7 +26,7 @@ public class HardwareMap {
   //Climb wheels, Spark PWM
   public  final int climbWheelLeft        = 6; //PWM
   public  final int climbWheelRight       = 7; //PWM
-  //Pneumatic Solonoids. connected to pneumatic controller
+  //Pneumatic Solonoids value for solenoid values. connected to pneumatic controller, PCM 
   public  final int pnuematic_front_down  = 0; 
   public  final int pnuematic_front_up    = 1;
   public  final int pnuematic_rear_down   = 2;
@@ -44,9 +44,26 @@ public class HardwareMap {
 // sensors
   public  int armPot = 0;
   public  int wristPot = 1;
+  
+  //Joystick - This is the IZT brand,  generic USB joystick
+public int buttonA            = 1;
+public int buttonB            = 2;
+public int buttonX            = 3;
+public int buttonY            = 4;
+public int buttonBumperLeft   = 5;
+public int buttonBumperRight  = 6;
+public int axisLeftX          = 0;
+public int axisLeftY          = 1;
+public int triggerLeft        = 2;
+public int triggerRight       = 3;
+public int axisRightX         = 4;
+public int axisRightY         = 5;
+
+
   // If you are using multiple modules, make sure to define both the port
   // number and the module. For example you with a rangefinder:
   // public static int rangefinderPort = 1;
   // public static int rangefinderModule = 1;
+
 
 }

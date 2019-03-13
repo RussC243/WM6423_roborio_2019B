@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj.*;
 //import frc.robot.Robot;
 //import frc.robot.RobotMap;
 import frc.robot.HardwareMap;
+import frc.robot.Robot.OurBots;
 
 public class Pneumatics 
 {
@@ -57,16 +58,97 @@ public class Pneumatics
     Solenoid pneumaticClimbUp = new Solenoid(RobotMap.pnuematic_climb_up); //Back system
     Solenoid pneumaticClimbDown = new Solenoid(RobotMap.pnuematic_climb_down); //Front system
     */ 
+    HardwareMap hMap; 
+    OurBots selectedBots_pnuematics_local; 
+    Spark pneumaticWheelLeft; 
+    Spark pneumaticWheelRight; 
+    Solenoid  pnuematic_front_down; //  = 0; 
+    Solenoid pnuematic_front_up;   // = 1;
+    Solenoid pnuematic_rear_down;  // = 2;
+    Solenoid pnuematic_rear_up;    // = 3;
+    Solenoid pnuematic_hatch_pull; // = 4;
+    Solenoid pnuematic_hatch_push; // = 5;
+    SpeedControllerGroup pnuematicGroup; 
+    private double pulseDuration = 1.01; //note in seconds. 
 
-    public Pneumatics()
+
+    public Pneumatics(OurBots selectedBots)
     {
+      hMap = new HardwareMap(); //Must create hardwareMap to access its fields. 
+      
+      selectedBots = selectedBots_pnuematics_local; 
+
+      switch(selectedBots)
+      {
+        case PEANUT:
+          //no wrist
+          //No compressor. 
+          System.out.println("Peanut Bot has no pnuematic system!"); 
+          break;
+        case WM2019_2ND:
+        //Pneumatic Drive, aka drop-down wheels. 
+        pneumaticWheelRight = new Spark(hMap.climbWheelLeft); //ID From hardware map. 
+        pneumaticWheelLeft = new Spark(hMap.climbWheelRight); //ID From hardware map. 
         
+        pnuematicGroup = new SpeedControllerGroup(pneumaticWheelLeft, pneumaticWheelRight);
+        
+        //Compressor code is handled internally, we just need to make Solenoid objects and features
+        //from there. 
+        //TODO: 2 solenoid objects exist, we need to make four more. 
+        pnuematic_front_up = new Solenoid(hMap.pcm_can_ID, hMap.pnuematic_front_up); //CAN ID for PCM
+        // and the PCM channel to control. 
+        pnuematic_front_up.setPulseDuration(pulseDuration); //PCM emits a pulse lasting 1.01 seconds. 
+        pnuematic_front_up.startPulse(); //pulse generated. 
+
+        pnuematic_front_down = new Solenoid(hMap.pcm_can_ID, hMap.pnuematic_front_down); 
+        pnuematic_front_down.setPulseDuration(pulseDuration);
+        pnuematic_front_down.startPulse(); 
+        
+        break;
+        case WM2019_BAG:
+        
+       //Pneumatic Drive, aka drop-down wheels. 
+       pneumaticWheelRight = new Spark(hMap.climbWheelLeft); //ID From hardware map. 
+       pneumaticWheelLeft = new Spark(hMap.climbWheelRight); //ID From hardware map. 
+       
+       pnuematicGroup = new SpeedControllerGroup(pneumaticWheelLeft, pneumaticWheelRight);
+       
+       //Compressor code is handled internally, we just need to make Solenoid objects and features
+       //from there. 
+       //TODO: 2 solenoid objects exist, we need to make four more. 
+       pnuematic_front_up = new Solenoid(hMap.pcm_can_ID, hMap.pnuematic_front_up); //CAN ID for PCM
+       // and the PCM channel to control. 
+       pnuematic_front_up.setPulseDuration(pulseDuration); //PCM emits a pulse lasting 1.01 seconds. 
+       pnuematic_front_up.startPulse(); //pulse generated. 
+
+       pnuematic_front_down = new Solenoid(hMap.pcm_can_ID, hMap.pnuematic_front_down); 
+       pnuematic_front_down.setPulseDuration(pulseDuration);
+       pnuematic_front_down.startPulse(); 
+       
+       break;
+
+       default:
+
+       System.out.println("Ummmmm......... \n No pneumatic system found...."); 
+  
+      break;
+      }
     }
-    public void setWheelState(boolean state) 
-    /***Method for Solenoid state. Setting it on turn them on while
+      
+
+    
+
+    //Might want to have a method for each solenoid object for turning it on or off. 
+    public void setSolenoidValues(boolean state) 
+    {
+       /***Method for Solenoid state. Setting it on turn them on while
      * setting it false cuts off power to them to make the air 
     go up the tubes and retract the wheels. 
     */
+      pnuematic_front_down.set(state);
+      pnuematic_front_down.set(state); 
+  }
+  
     /*
     {
         pneumaticClimbUp.set(state);
@@ -99,11 +181,7 @@ public class Pneumatics
       }
   
     }
-    @Override
-    protected void initDefaultCommand() {
-
-    }
-
+  
 	public void setMotorValue(double value) {//Motor value passed in a command class. 
        pnuematicGroup.set(value);
     }
