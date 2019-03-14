@@ -33,9 +33,10 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   HardwareMap hMap = new HardwareMap();   //This defines what inputs and outputs are connectedd to roborio
-  DriveTrain driveTrain = new DriveTrain(selectedBot);
+  DriveTrain driveTrain = new DriveTrain(selectedBot); //Subsystem for the robot's drivebase. 
   public static final int xboxPort = 0;
   public XboxController xCon = new XboxController(xboxPort);
+  Pneumatics pneumatics = new Pneumatics(selectedBot); //Pneumatics subsystem.
 
   /**
    * This function is run when the robot is first started up and should be
@@ -124,6 +125,23 @@ public class Robot extends TimedRobot {
 
   public void linkJoyStickButtonsToPnuematics() 
   {
+    /*** Method for linking pneumatic commmands to joystick buttons.
+     * TODO: Resolve which buttons are for which command. 
+     * Also, should we change xCon to the IZT (generic HID)? 
+     * Formula: 
+     * Button condition - pnuematic command performed. 
+    */
+
+    if(xCon.getAButtonPressed() )
+    {
+      pneumatics.frontExtend(); //Extends front pneumatic system.
+    }
+
+    if(xCon.getBButtonPressed()) 
+    {
+      pneumatics.frontRetract(); // Retracts front pneumatic system. 
+    }
+      //More examples need to be made. 
       
     
 
