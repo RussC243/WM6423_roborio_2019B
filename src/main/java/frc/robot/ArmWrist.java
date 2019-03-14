@@ -20,6 +20,7 @@ public class ArmWrist {
   //HardwareMap hMap = new HardwareMap();
   //Declare all possible objects here and instantiate what is needed for each bot in constructor
   //Peanut Bot
+  HardwareMap hMap;
   WPI_VictorSPX armLeft_peanut; 
   WPI_TalonSRX  armRight_peanut; 
       //no wrist connected
@@ -37,21 +38,27 @@ public class ArmWrist {
 
   //at 20mS per update, changing target from zero to full up or full down would take 1000*0.020 = 20 sec
   //So to speed the motion we will change target by the factor every 20mS.
-  int FAST_MOTION_FACTOR      = 1; //20 sec divided by 10 = 2 sec for full travel up or down from center position
-  double ARM_FULL             = 1000; //range is -1000 to +1000
-  double WRIST_FULL           = 1000;
+  int FAST_MOTION_FACTOR      = 20; //20 sec divided by 10 = 2 sec for full travel up or down from center position
+  double ARM_FULL             = 1000.0; //range is -1000 to +1000
+  double WRIST_FULL           = 1000.0;
   double armPositionCurrent   = 0;
   double armPositionTarget    = 0;
   double wristPositionCurrent = 0; 
   double wristPositionTarget  = 0;
-  double ARM_UP_LIMIT        = 300;//for now stay near center so we don't break the new pots
-  double ARM_DOWN_LIMIT      = -300;
+  double ARM_UP_LIMIT        = 150;//for now stay near center so we don't break the new pots
+  double ARM_DOWN_LIMIT      = -650;
   double WRIST_UP_LIMIT      = 300;
   double WRIST_DOWN_LIMIT    = -300;
-   
+  //Observed values on WM2019_2nd bot
+  //Static Values (after I term settles)
+  //pot   : target: pid out  
+  //0.2   : 160   : -0.2  full up???
+  //-0.73 : -659  : -0.2  full down???
+  //  
+  
   MiniPID pidArm;
-  double P_ARM = 0.55;
-  double I_ARM = 0.0;
+  double P_ARM = 0.99;
+  double I_ARM = 0.005;
   double D_ARM = 0.0;
   
   MiniPID pidWrist;
@@ -63,6 +70,7 @@ public class ArmWrist {
   OurBots selectedBot_local; //copy so we can pass in one in constructor
   public ArmWrist(OurBots selectedBot)//constructor
   {
+    hMap = new HardwareMap();
     selectedBot_local = selectedBot;
     //arm PID
     pidArm = new MiniPID(P_ARM,I_ARM,D_ARM);
@@ -140,17 +148,17 @@ public class ArmWrist {
   public void processPIDs()
   {
     //----------------------------------------------------------
-    armPositionCurrent   = potArm.get()/ARM_FULL  - 1.0;  //map [0 to 2.0] to [-1.0 to 1.0]
+    armPositionCurrent   = potArm.get()/ARM_FULL - 1.0;  //map [0 to 2.0] to [-1.0 to 1.0]
     wristPositionCurrent = potWrist.get()/WRIST_FULL - 1.0; 
     //For each PID cycle, pass in the current and target positions. 
     //The needed drive to eliminate error is returned from the PID.
     //Simple as that :)
     //sensor target
-    double pidOutputArm   = pidArm.getOutput(armPositionCurrent, armPositionTarget/ARM_FULL); //output range is -1000 to +1000
-    double pidOutputWrist = pidWrist.getOutput(wristPositionCurrent, wristPositionTarget/WRIST_FULL);
+    double pidOutputArm   = -pidArm.getOutput(armPositionCurrent, armPositionTarget/ARM_FULL); //output range is -1000 to +1000
+    double pidOutputWrist = -pidWrist.getOutput(wristPositionCurrent, wristPositionTarget/WRIST_FULL);
     if(printCounter%10 == 0)//print every 20*10 = 200mS
     {
-      System.out.printf("C:T:P %.0f : %.0f : %.3f  :  %.0f : %.0f : %.4f\n", 
+      System.out.printf("C:T:P %.2f : %.2f : %.3f  :  %.2f : %.2f : %.4f\n", 
                                               armPositionCurrent,
                                               armPositionTarget,
                                               pidOutputArm,  

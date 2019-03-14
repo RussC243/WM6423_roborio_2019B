@@ -38,7 +38,7 @@ public class DriveTrain
   SpeedController leftSpeedGroup; 
   SpeedController rightSpeedGroup;
   DifferentialDrive diffDrive;
-  
+  double DRIVE_SCALE = 0.75;
   public DriveTrain(OurBots selectedBot)//constructor
   {
     switch(selectedBot)
@@ -74,7 +74,7 @@ public class DriveTrain
   {
      if(Math.abs(left)>0.1 || Math.abs(right)>0.1)
      {
-        diffDrive.tankDrive(left,right);
+        diffDrive.tankDrive(left*DRIVE_SCALE,right*DRIVE_SCALE);
      }
      else
      {
