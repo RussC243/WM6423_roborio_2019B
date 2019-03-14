@@ -45,24 +45,23 @@ public class HardwareMap {
   public  int armPot    = 0;
   public  int wristPot  = 1;
 
-//Joystick - This is the IZT brand,  generic USB joystick
-public int buttonA            = 1;
-public int buttonB            = 2;
-public int buttonX            = 3;
-public int buttonY            = 4;
-public int buttonBumperLeft   = 5;
-public int buttonBumperRight  = 6;
-public int axisLeftX          = 0;
-public int axisLeftY          = 1;
-public int triggerLeft        = 2;
-public int triggerRight       = 3;
-public int axisRightX         = 4;
-public int axisRightY         = 5;
-
-
-  // If you are using multiple modules, make sure to define both the port
-  // number and the module. For example you with a rangefinder:
-  // public static int rangefinderPort = 1;
-  // public static int rangefinderModule = 1;
-
+  //Joystick - This is the IZT brand,  generic USB joystick
+  public int buttonA          = 1; //arm down, cycle
+  public int buttonB          = 2; //climb down
+  public int buttonClimbDown  = 2; 
+  public int buttonX          = 3; //arm up, cycle
+  public int buttonY          = 4; //climb up
+  public int buttonClimbUp    = 4; //alias
+  public int buttonBumperLeft = 5; //arm down, manual
+  public int buttonBumperRight= 6; //arm up, manual
+  public int axisLeftX        = 0; //x
+  public int axisLeftY        = 1; //tank drive left
+  public int triggerLeft      = 2; //x
+  public int triggerRight     = 3; //x
+  public int axisRightX       = 4; //x
+  public int axisRightY       = 5; //tank drive right
+  public int buttonHatchPush  = 77777;
+  public int buttonHatchPull  = 77777;
+  public int axisLeftTrigger  = 77777;
+  public int axisRightTrigger = 77777;
 }

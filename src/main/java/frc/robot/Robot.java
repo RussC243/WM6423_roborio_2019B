@@ -9,6 +9,9 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import javax.lang.model.util.ElementScanner6;
+
 import edu.wpi.first.wpilibj.Joystick;
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -29,11 +32,11 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
   
-  Joystick        js  = new Joystick(0);     //popular and generic, IZT brand joystick
-  HardwareMap     hm  = new HardwareMap();   //This defines what inputs and outputs are connectedd to roborio
-  DriveTrain      dt  = new DriveTrain(selectedBot);
-  ArmWrist        aw  = new ArmWrist(selectedBot);
-  Pneumatics      pn  = new Pneumatics(selectedBot);
+  Joystick        joy      = new Joystick(0);     //popular and generic, IZT brand joystick
+  HardwareMap     hMap     = new HardwareMap();   //This defines what inputs and outputs are connectedd to roborio
+  DriveTrain      dTrain   = new DriveTrain(selectedBot);
+  ArmWrist        armWrist = new ArmWrist(selectedBot);
+  Pneumatics      air      = new Pneumatics(selectedBot);
    
   /**
    * This function is run when the robot is first started up and should be
@@ -95,8 +98,8 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     System.out.printf("teleopInit\n"); 
-    aw.armPositionTarget = 0.1234;
-    aw.wristPositionTarget = 0.1234; 
+    armWrist.armPositionTarget = 0.1234;
+    armWrist.wristPositionTarget = 0.1234; 
   }
 
   /**
@@ -107,7 +110,7 @@ public class Robot extends TimedRobot {
     linkJoyStickToDrive();
     linkJoyStickToArmWrist();
     linkJoyStickToPneumatics();
-    aw.processPIDs();
+    armWrist.processPIDs();
   }
 
   /**
@@ -119,16 +122,57 @@ public class Robot extends TimedRobot {
 
   public void linkJoyStickToDrive()
   {
-    dt.drive(js.getRawAxis(hm.axisLeftY),js.getRawAxis(hm.axisRightY)); //left and right veritcal axis
+    dTrain.drive(joy.getRawAxis(hMap.axisLeftY),joy.getRawAxis(hMap.axisRightY)); //left and right veritcal axis
   }
   public void linkJoyStickToArmWrist()
   {
-    aw.upDownManual(js.getRawButton(hm.buttonBumperRight), js.getRawButton(hm.buttonBumperLeft));
-    // aw.upDownCycle( js.getRawButton(hm.buttonX), js.getRawButton(hm.buttonA)); 
-    // aw.upDownWristOnly(js.getPOV());
+    armWrist.upDownManual(joy.getRawButton(hMap.buttonBumperRight), joy.getRawButton(hMap.buttonBumperLeft));
+    // armWrist.upDownCycle( js.getRawButton(hm.buttonX), js.getRawButton(hm.buttonA)); 
+    // armWrist.upDownWristOnly(js.getPOV());
+  
   }
   public void linkJoyStickToPneumatics()
   {
-    // pn.upDown(js.getRawButton(hm.buttonB), js.getRawButton(hm.buttonY));
+    //---- Control the climb pistons. ------------------
+    if(joy.getRawButton(hMap.buttonClimbDown))
+    {
+      air.frontRetract();
+      air.rearRetract();
+    }
+    if(joy.getRawButton(hMap.buttonClimbUp))
+    {
+      air.frontExtend();
+      air.rearExtend();
+    }
+    
+    //---- Control the hatch pistons. ------------------
+    /*TODO: Find unused buttons on controller, add them to map and un-comment this code
+    
+    if(joy.getRawButton(hMap.buttonHatchPull))
+    //{
+      air.hatchRetract();
+    }
+    if(joy.getRawButton(hMap.buttonHatchPush))
+    {
+      air.hatchExtend();
+    }
+    */
+    //---- Control the drop wheels. ------------------
+    /* TODO: find out the trigger axis ID using the driver station and set in the hardare map. 
+    Then un-comment this code
+    
+    if(joy.getRawAxis(hMap.axisLeftTrigger) > 0.2)
+    {
+      air.driveDropWheels(joy.getRawAxis(hMap.axisLeftTrigger));
+    }
+    else if(joy.getRawAxis(hMap.axisRightTrigger) > 0.2)
+    {
+      air.driveDropWheels(joy.getRawAxis(hMap.axisRightTrigger));
+    }
+    else
+    {
+      air.driveDropWheels(0);
+    }
+    */
   }
 }

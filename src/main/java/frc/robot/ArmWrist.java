@@ -71,7 +71,7 @@ public class ArmWrist {
   public ArmWrist(OurBots selectedBot)//constructor
   {
     hMap = new HardwareMap();
-    selectedBot_local = selectedBot;
+    selectedBot_local = selectedBot; //copy to be used by other methods of this class
     //arm PID
     pidArm = new MiniPID(P_ARM,I_ARM,D_ARM);
     pidArm.setSetpoint(0.0);            //center of travel
