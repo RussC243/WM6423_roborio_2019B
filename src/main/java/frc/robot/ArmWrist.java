@@ -19,15 +19,30 @@ public class ArmWrist {
   //at 20mS per update, changing target from zero to full up or full down would take 1000*0.020 = 20 sec
   //So to speed the motion we will change target by the factor every 20mS.
   final int FAST_MOTION_FACTOR  = 20;     //20 sec divided by 10 = 2 sec for full travel up or down from center position
-  //define the range of the pots
+  //define the range of digital counts of the pots
   final double ARM_FULL         = 1000.0; //range is -1000 to +1000
   final double WRIST_FULL       = 1000.0;
-  //travel limits 
+  //----- target limits so we dont over rotate ---------------------------
+  //These are in units of analog to digital counts returned from the pot sensor
   final double ARM_UP_LIMIT     = 150; //for now stay near center so we don't break the new pots
   final double ARM_DOWN_LIMIT   = -650;
   final double WRIST_UP_LIMIT   = 300;
   final double WRIST_DOWN_LIMIT = -300;
-  //poses (there are only a hadfull so an array would add more complication than the benifit)
+  //------- values needed to calculated the PID feed forward value to compensate for torque caused by the weight of the arm 
+  //We will ignore affects of the various wrist positions affecting the torque on the arm joint.
+  //Once the angle of the arm is known and the relative to the arm is known, we can determine the angle of the wrist
+  //  relative to gravity.
+  final double ARM_ANGLE_FULL_UP    = 50; //degrees up from straight out
+  final double ARM_ANGLE_FULL_DOWN  = 40; //degrees down from straight out
+  final double WRIST_ANGLE_FULL_DOWN= 40; //degrees down relative to arm
+  final double WRIST_ANGLE_FULL_UP  = 50; //degrees up relative to arm
+  final double ARM_POT_FULL_UP      = 50; //pot digital value when full down
+  final double ARM_POT_FULL_DOWN    = 40; //pot digital value when full up
+  final double WRIST_POT_FULL_UP    = 50; //pot digital value when full down
+  final double WRIST_POT_FULL_DOWN  = 40; //pot digital value when full up
+    
+
+  //------- poses (There are only a hadfull so an array would add more complication than the benifit.) --------
   final double ARM_POSE_0       = -500; //pick up ball from ground
   final double WRIST_ARM_POSE_0 =  200;
   final double ARM_POSE_1       = -300; //hatch level 1
@@ -210,7 +225,7 @@ public class ArmWrist {
       }
     }
   }
-  
+  q
   public void processPIDs()
   {
     //----------------------------------------------------------
