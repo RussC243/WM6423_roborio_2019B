@@ -4,25 +4,28 @@
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
-
 package frc.robot;
 
 /**
- * Add your docs here.
+ This class defines how the roborio for each robot is wired to its peripheral hardware
+  and what that hardware does. This abstracts the details so all numbers are in one place 
  */
 public class HardwareMap {
-    //Drive motors are mixed: Sparks, Talons on CAN bus and one talon on PWM
-  public  final int driveMotorLeftFront 	= 0 ; //can ID 0 on bag bot, PWM 0 on peanut and 2nd bots
-  public  final int driveMotorLeftRear 	 = 1;  //can ID 1 on bag and 2nd, PWM 1 on peanut and
-  public  final int driveMotorRightFront 	= 2;  //can ID 2 on bag and 2nd bots, PWM 2 on peanut
-  public  final int driveMotorRightRear 	= 3;  //can ID 3 on bag and 2nd bots, PWM 3 on peanut
+  //Drive motors are mixed: Sparks, Talons on CAN bus and one talon on PWM
+  public  final int canID_driveMotorLeftFront 	= 0 ; //can ID 0 on bag bot, PWM 0 on peanut and 2nd bots
+  public  final int canID_driveMotorLeftRear 	  = 1;  //can ID 1 on bag and 2nd, PWM 1 on peanut and
+  public  final int canID_driveMotorRightFront 	= 2;  //can ID 2 on bag and 2nd bots, PWM 2 on peanut
+  public  final int canID_driveMotorRightRear 	= 3;  //can ID 3 on bag and 2nd bots, PWM 3 on peanut
   //Arm motors: Talon SRX  
-  public  final int armMotorLeft          = 4;  //can ID 4
-  public  final int armMotorRight         = 5;  //can ID 5
+  public  final int canID_armMotorLeft          = 4;  //can ID 4
+  public  final int canID_armMotorRight         = 5;  //can ID 5
+  // Pneumatics control module and Power Distribution Panel
+  public  final int canID_PCM                   = 6;  //can ID 6
+  public  final int canID_PDP                   = 7;  //can ID 7
   //Intake motor: Spark PWM  
   public  final int intakeMotor           = 4; //next PWM is at 4 to be common with peanut 
   //Wrist, Spark PWM. 
-  public  final int wristMotor            = 5; //PWM
+  public  final int wristMotor            = 5; //PWM 
   //Climb wheels, Spark PWM
   public  final int climbWheelLeft        = 6; //PWM
   public  final int climbWheelRight       = 7; //PWM
@@ -33,35 +36,47 @@ public class HardwareMap {
   public  final int pnuematic_rear_up     = 3;
   public  final int pnuematic_hatch_pull  = 4;
   public  final int pnuematic_hatch_push  = 5;
-
-  // PCM and PDP
-  public  int pcm_can_ID = 6;
-  public  int pdp_can_ID = 7; 
-  
   // compressors
-  public  int pneumaticCompressor = 0 ;
-
-// sensors
-  public  int armPot    = 0;
-  public  int wristPot  = 1;
-
+  public  final int pneumaticCompressor = 0 ;
+  // sensors
+  public  final int armPot    = 0;
+  public  final int wristPot  = 1;
   //Joystick - This is the IZT brand,  generic USB joystick
-  public int buttonA          = 1; //arm down, cycle
-  public int buttonB          = 2; //climb down
-  public int buttonClimbDown  = 2; 
-  public int buttonX          = 3; //arm up, cycle
-  public int buttonY          = 4; //climb up
-  public int buttonClimbUp    = 4; //alias
-  public int buttonBumperLeft = 5; //arm down, manual
-  public int buttonBumperRight= 6; //arm up, manual
-  public int axisLeftX        = 0; //x
-  public int axisLeftY        = 1; //tank drive left
-  public int triggerLeft      = 2; //x
-  public int triggerRight     = 3; //x
-  public int axisRightX       = 4; //x
-  public int axisRightY       = 5; //tank drive right
-  public int buttonHatchPush  = 77777;
-  public int buttonHatchPull  = 77777;
-  public int axisLeftTrigger  = 77777;
-  public int axisRightTrigger = 77777;
+  private final int buttonA             = 1; //arm down, cycle
+  public  final int buttonArmCycleDown  = buttonA;
+  private final int buttonB             = 2; //climb down
+  public  final int buttonClimbDown     = buttonB;
+  private final int buttonX             = 3; //arm up, cycle
+  public  final int buttonArmCycleUp    = buttonX; 
+  private final int buttonY             = 4; //climb up
+  public  final int buttonClimbUp       = buttonY; 
+  private final int buttonBumperLeft    = 5; //arm down, manual
+  public  final int buttonArmManualDown = buttonBumperLeft; 
+  private final int buttonBumperRight   = 6; //arm up, manual
+  public  final int buttonArmManualUp   = buttonBumperRight; 
+  private final int axisLeftX           = 0; //x
+  private final int axisLeftY           = 1; //tank drive left
+  public  final int axisTankDriveLeft   = axisLeftY;
+  private final int axisTriggerLeft     = 2; //x
+  private final int axisTriggerRight    = 3; //x
+  private final int axisRightX          = 4; //x
+  private final int axisRightY          = 5; //tank drive right
+  public  final int axisTankDriveRight  = axisRightY;
+  
+  public final int buttonHatchPush      = 77777;//TODO: map these place holders
+  public final int buttonHatchPull      = 77777;
+  public final int axisLeftTrigger      = 77777;
+  public final int axisRightTrigger     = 77777;
+  
+  //Power Distribution Panel
+  public  final int PDP_driveMotorLeftFront 	= 3;//TODO: replace these place holders 
+  public  final int PDP_driveMotorLeftRear 	  = 3;  
+  public  final int PDP_driveMotorRightFront 	= 3;  
+  public  final int PDP_driveMotorRightRear 	= 3;  
+  public  final int PDP_armMotorLeft          = 3;  
+  public  final int PDP_armMotorRight         = 3;  
+  public  final int PDP_intakeMotor           = 3; 
+  public  final int PDP_wristMotor            = 3; 
+  public  final int PDP_climbWheelLeft        = 3; 
+  public  final int PDP_climbWheelRight       = 3; 
 }

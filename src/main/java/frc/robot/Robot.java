@@ -9,9 +9,6 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
-import javax.lang.model.util.ElementScanner6;
-
 import edu.wpi.first.wpilibj.Joystick;
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -25,7 +22,7 @@ public class Robot extends TimedRobot {
   {
     PEANUT, WM2019_BAG, WM2019_2ND //The peanut is Russ' test bot. The bag bot is the one in the bag. The 2nd is the spare bot
   }
-  OurBots selectedBot = OurBots.WM2019_2ND; //set the bot to the one you are working with
+  final OurBots selectedBot = OurBots.WM2019_2ND; //set the bot to the one you are working with
 
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
@@ -122,13 +119,13 @@ public class Robot extends TimedRobot {
 
   public void linkJoyStickToDrive()
   {
-    dTrain.drive(joy.getRawAxis(hMap.axisLeftY),joy.getRawAxis(hMap.axisRightY)); //left and right veritcal axis
+    dTrain.drive(joy.getRawAxis(hMap.axisTankDriveLeft),joy.getRawAxis(hMap.axisTankDriveRight)); //left and right veritcal axis
   }
   public void linkJoyStickToArmWrist()
   {
-    armWrist.upDownManual(joy.getRawButton(hMap.buttonBumperRight), joy.getRawButton(hMap.buttonBumperLeft));
-    // armWrist.upDownCycle( js.getRawButton(hm.buttonX), js.getRawButton(hm.buttonA)); 
-    // armWrist.upDownWristOnly(js.getPOV());
+    armWrist.upDownManual(joy.getRawButton(hMap.buttonArmManualUp), joy.getRawButton(hMap.buttonArmManualDown));
+    armWrist.upDownCycle( joy.getRawButton(hMap.buttonArmCycleUp), joy.getRawButton(hMap.buttonArmCycleDown)); 
+    // armWrist.upDownWristOnly(joy.getPOV());
   
   }
   public void linkJoyStickToPneumatics()

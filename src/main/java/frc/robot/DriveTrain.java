@@ -39,6 +39,7 @@ public class DriveTrain
   SpeedController rightSpeedGroup;
   DifferentialDrive diffDrive;
   double DRIVE_SCALE = 0.75;
+  
   public DriveTrain(OurBots selectedBot)//constructor
   {
     switch(selectedBot)

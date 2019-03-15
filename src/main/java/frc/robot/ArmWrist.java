@@ -16,8 +16,36 @@ import edu.wpi.first.wpilibj.*;
  * Add your docs here.
  */
 public class ArmWrist {
-  //todo: move magic numbers to HardwareMap class
-  //HardwareMap hMap = new HardwareMap();
+  //at 20mS per update, changing target from zero to full up or full down would take 1000*0.020 = 20 sec
+  //So to speed the motion we will change target by the factor every 20mS.
+  final int FAST_MOTION_FACTOR  = 20;     //20 sec divided by 10 = 2 sec for full travel up or down from center position
+  //define the range of the pots
+  final double ARM_FULL         = 1000.0; //range is -1000 to +1000
+  final double WRIST_FULL       = 1000.0;
+  //travel limits 
+  final double ARM_UP_LIMIT     = 150; //for now stay near center so we don't break the new pots
+  final double ARM_DOWN_LIMIT   = -650;
+  final double WRIST_UP_LIMIT   = 300;
+  final double WRIST_DOWN_LIMIT = -300;
+  //poses (there are only a hadfull so an array would add more complication than the benifit)
+  final double ARM_POSE_0       = -500; //pick up ball from ground
+  final double WRIST_ARM_POSE_0 =  200;
+  final double ARM_POSE_1       = -300; //hatch level 1
+  final double WRIST_ARM_POSE_1 =  100;
+  final double ARM_POSE_2       = -100; //hatch level 2
+  final double WRIST_ARM_POSE_2 =    0;
+  final double ARM_POSE_3       =  100; //hatch level 3
+  final double WRIST_ARM_POSE_3 = -100;
+  private int poseSelection             = 1;    //initial pose
+  final private int POSE_HIGHEST_DEFINED= 3;    //poses 0 to 3 are defined so far
+
+  //Observed values for the pots for a given position 
+  //Static Values (after I term settles)
+  //Values for the WM2019_2nd bot
+  //pot   : target: pid out  
+  //0.2   : 160   : -0.2  full up
+  //-0.73 : -659  : -0.2  full down
+  
   //Declare all possible objects here and instantiate what is needed for each bot in constructor
   //Peanut Bot
   HardwareMap hMap;
@@ -36,38 +64,23 @@ public class ArmWrist {
   AnalogPotentiometer potArm;
   AnalogPotentiometer potWrist;  
 
-  //at 20mS per update, changing target from zero to full up or full down would take 1000*0.020 = 20 sec
-  //So to speed the motion we will change target by the factor every 20mS.
-  int FAST_MOTION_FACTOR      = 20; //20 sec divided by 10 = 2 sec for full travel up or down from center position
-  double ARM_FULL             = 1000.0; //range is -1000 to +1000
-  double WRIST_FULL           = 1000.0;
-  double armPositionCurrent   = 0;
-  double armPositionTarget    = 0;
-  double wristPositionCurrent = 0; 
-  double wristPositionTarget  = 0;
-  double ARM_UP_LIMIT        = 150;//for now stay near center so we don't break the new pots
-  double ARM_DOWN_LIMIT      = -650;
-  double WRIST_UP_LIMIT      = 300;
-  double WRIST_DOWN_LIMIT    = -300;
-  //Observed values on WM2019_2nd bot
-  //Static Values (after I term settles)
-  //pot   : target: pid out  
-  //0.2   : 160   : -0.2  full up???
-  //-0.73 : -659  : -0.2  full down???
-  //  
-  
+  double armPositionCurrent      = 0;
+  double armPositionTarget       = 0;
+  double wristPositionCurrent    = 0; 
+  double wristPositionTarget     = 0;
+    
   MiniPID pidArm;
-  double P_ARM = 0.99;
-  double I_ARM = 0.005;
-  double D_ARM = 0.0;
-  
+  final double P_ARM = 0.99;
+  final double I_ARM = 0.005;
+  final double D_ARM = 0.0;
   MiniPID pidWrist;
-  double P_WRIST = 0.55;
-  double I_WRIST = 0.0;
-  double D_WRIST = 0.0;
+  final double P_WRIST = 0.55;
+  final double I_WRIST = 0.0;
+  final double D_WRIST = 0.0;
   
   int printCounter = 0; //used to reduce the print frequency
   OurBots selectedBot_local; //copy so we can pass in one in constructor
+  
   public ArmWrist(OurBots selectedBot)//constructor
   {
     hMap = new HardwareMap();
@@ -145,6 +158,59 @@ public class ArmWrist {
       }
     }
   }
+
+  public void upDownCycle(boolean up, boolean down)
+  {
+    //---- process the pose selection-----------------
+    if(up && poseSelection < POSE_HIGHEST_DEFINED)
+    {
+      poseSelection++;
+    }
+    else
+    {
+      if(down && poseSelection > 0)
+      {
+         poseSelection--;
+      }
+    }
+    //strike a pose, come on vogue
+    switch (poseSelection)
+    {
+      case 0:
+        wristPositionTarget = WRIST_ARM_POSE_0;
+        armPositionTarget = ARM_POSE_0;
+        break;
+      case 1:
+        wristPositionTarget = WRIST_ARM_POSE_1;
+        armPositionTarget = ARM_POSE_1;
+        break;
+      case 2:
+        wristPositionTarget = WRIST_ARM_POSE_2;
+        armPositionTarget = ARM_POSE_2;
+        break;
+      case 3:
+        wristPositionTarget = WRIST_ARM_POSE_3;
+        armPositionTarget   = ARM_POSE_3;
+        break;
+      default:
+        System.out.printf("*** Logic Error *** bad pose selection - please fix your code");
+        break;
+    }
+
+    //---- process the wrist ------------------
+    if(up && wristPositionTarget < WRIST_UP_LIMIT)
+    {
+      wristPositionTarget += FAST_MOTION_FACTOR;
+    }
+    else
+    {
+      if(down && wristPositionTarget > WRIST_DOWN_LIMIT)
+      {
+        wristPositionTarget -= FAST_MOTION_FACTOR;
+      }
+    }
+  }
+  
   public void processPIDs()
   {
     //----------------------------------------------------------
