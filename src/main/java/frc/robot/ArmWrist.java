@@ -22,26 +22,30 @@ public class ArmWrist {
   //define the range of digital counts of the pots
   final double ARM_FULL         = 1000.0; //range is -1000 to +1000
   final double WRIST_FULL       = 1000.0;
+  
+  //*************************************************************************************************************************
+  //values with comments starting with @@@ must be determied empirically for each robot each time the pot set screw is tightned   
+  //*************************************************************************************************************************
   //----- target limits so we dont over rotate ---------------------------
   //These are in units of analog to digital counts returned from the pot sensor
-  final double ARM_UP_LIMIT     = 150; //for now stay near center so we don't break the new pots
-  final double ARM_DOWN_LIMIT   = -650;
-  final double WRIST_UP_LIMIT   = 300;
-  final double WRIST_DOWN_LIMIT = -300;
+  final double ARM_POT_FULL_UP       =  150;  //@@@ - record from print output
+  final double ARM_POT_FULL_DOWN     = -650;  //@@@ 
+  final double ARM_POT_STRAIGHT_OUT  = -200;  //@@@ 
+  
+  final double WRIST_POT_FULL_UP     =  200;  //@@@ 
+  final double WRIST_POT_FULL_DOWN   = -200;  //@@@ 
+  final double WRIST_POT_STRAIGHT_OUT=   -0;  //@@@ 
+  
   //------- values needed to calculated the PID feed forward value to compensate for torque caused by the weight of the arm 
   //We will ignore affects of the various wrist positions affecting the torque on the arm joint.
   //Once the angle of the arm is known and the relative to the arm is known, we can determine the angle of the wrist
   //  relative to gravity.
-  final double ARM_ANGLE_FULL_UP    = 50; //degrees up from straight out
-  final double ARM_ANGLE_FULL_DOWN  = 40; //degrees down from straight out
-  final double WRIST_ANGLE_FULL_DOWN= 40; //degrees down relative to arm
-  final double WRIST_ANGLE_FULL_UP  = 50; //degrees up relative to arm
-  final double ARM_POT_FULL_UP      = 50; //pot digital value when full down
-  final double ARM_POT_FULL_DOWN    = 40; //pot digital value when full up
-  final double WRIST_POT_FULL_UP    = 50; //pot digital value when full down
-  final double WRIST_POT_FULL_DOWN  = 40; //pot digital value when full up
-    
-
+  final double ARM_ANGLE_FULL_UP    = 50; //@@@ degrees up from straight out  - measure with inclinometer
+  final double ARM_ANGLE_FULL_DOWN  = 40; //@@@ degrees down from straight out
+  final double ARM_NEEDED_COMPENSATION_STRAIGHT_OUT = 0.2;  //@@@ measure by looking at print of PID out value with no compensation
+  final double WRIST_ANGLE_FULL_UP  = 90; //@@@ degrees up relative to arm    
+  final double WRIST_ANGLE_FULL_DOWN= 40; //@@@ degrees down relative to arm  
+  final double WRIST_NEEDED_COMPENSATION_STRAIGHT_OUT = 0.2;//@@@ measure by looking at print of PID out value with no compensation
   //------- poses (There are only a hadfull so an array would add more complication than the benifit.) --------
   final double ARM_POSE_0       = -500; //pick up ball from ground
   final double WRIST_ARM_POSE_0 =  200;
@@ -149,25 +153,25 @@ public class ArmWrist {
   {
     //This function only sets the target values. The processPIDs below drives the motors
     //---- process the arm ------------------
-    if(up && armPositionTarget < ARM_UP_LIMIT)
+    if(up && armPositionTarget < ARM_POT_FULL_UP)
     {
       armPositionTarget += FAST_MOTION_FACTOR;
     }
     else
     {
-      if(down && armPositionTarget > ARM_DOWN_LIMIT)
+      if(down && armPositionTarget > ARM_POT_FULL_DOWN)
       {
          armPositionTarget -= FAST_MOTION_FACTOR;
       }
     }
     //---- process the wrist ------------------
-    if(up && wristPositionTarget < WRIST_UP_LIMIT)
+    if(up && wristPositionTarget < WRIST_POT_FULL_UP)
     {
       wristPositionTarget += FAST_MOTION_FACTOR;
     }
     else
     {
-      if(down && wristPositionTarget > WRIST_DOWN_LIMIT)
+      if(down && wristPositionTarget > WRIST_POT_FULL_DOWN)
       {
         wristPositionTarget -= FAST_MOTION_FACTOR;
       }
@@ -213,22 +217,22 @@ public class ArmWrist {
     }
 
     //---- process the wrist ------------------
-    if(up && wristPositionTarget < WRIST_UP_LIMIT)
+    if(up && wristPositionTarget < WRIST_POT_FULL_UP)
     {
       wristPositionTarget += FAST_MOTION_FACTOR;
     }
     else
     {
-      if(down && wristPositionTarget > WRIST_DOWN_LIMIT)
+      if(down && wristPositionTarget > WRIST_POT_FULL_DOWN)
       {
         wristPositionTarget -= FAST_MOTION_FACTOR;
       }
     }
   }
-  q
+  
   public void processPIDs()
   {
-    //----------------------------------------------------------
+    //----- read the pots, cycle the PIDs and store the PID outputs  -----------------------------------------------------
     armPositionCurrent   = potArm.get()/ARM_FULL - 1.0;  //map [0 to 2.0] to [-1.0 to 1.0]
     wristPositionCurrent = potWrist.get()/WRIST_FULL - 1.0; 
     //For each PID cycle, pass in the current and target positions. 
@@ -237,15 +241,64 @@ public class ArmWrist {
     //sensor target
     double pidOutputArm   = -pidArm.getOutput(armPositionCurrent, armPositionTarget/ARM_FULL); //output range is -1000 to +1000
     double pidOutputWrist = -pidWrist.getOutput(wristPositionCurrent, wristPositionTarget/WRIST_FULL);
+    //----------------------------------------------------------
+    //calcualte the feed forward terms to compensate for torques caused by weight of arm and wrist------------------------
+    double feedForwardArm   = 0; 
+    double feedForwardWrist = 0;
+    double armAngle         = 0;
+    double wristAngle       = 0; 
+    //The ARM_FULL term is needed to scale from -1 to +1 back to -1000 to 1000
+    if(ARM_FULL * armPositionCurrent > ARM_POT_STRAIGHT_OUT)
+    {
+      //The angle above stright out  = full up angle * (measured pot value - straight out pot value) /(full up pot value - straight out pot value) 
+      armAngle = ARM_ANGLE_FULL_UP * (ARM_FULL * armPositionCurrent - ARM_POT_STRAIGHT_OUT) / (ARM_POT_FULL_UP - ARM_POT_STRAIGHT_OUT);
+    }
+    else
+    {
+      //The angle below stright out  = full down angle * (measured pot value- full down pot value) /(straight out pot value - full down pot value) 
+      armAngle = ARM_ANGLE_FULL_DOWN * (ARM_FULL * armPositionCurrent - ARM_POT_FULL_DOWN) / (ARM_POT_STRAIGHT_OUT - ARM_POT_FULL_DOWN);
+    }
+    //The ARM_FULL term is needed to scale from -1 to +1 back to -1000 to 1000
+    if(WRIST_FULL * wristPositionCurrent > WRIST_POT_STRAIGHT_OUT)
+    {
+      //The angle above stright out  = full up angle * (measured pot value - straight out pot value) /(full up pot value - straight out pot value) 
+      //The WRIST_FULL term is needed to scale from -1 to +1 back to -1000 to 1000
+      wristAngle = WRIST_ANGLE_FULL_UP * (WRIST_FULL * wristPositionCurrent - WRIST_POT_STRAIGHT_OUT) / (WRIST_POT_FULL_UP - WRIST_POT_STRAIGHT_OUT);
+    }
+    else
+    {
+      //The angle below stright out  = full down angle * (measured pot value- full down pot value) /(straight out pot value - full down pot value) 
+      wristAngle = WRIST_ANGLE_FULL_DOWN * (WRIST_FULL * armPositionCurrent - WRIST_POT_FULL_DOWN) / (WRIST_POT_STRAIGHT_OUT - WRIST_POT_FULL_DOWN);
+    }
+    //------- now that we know the arm and wrist angles, calcualte the wrist angle relative to gravity
+    double wristAngleRealtiveToGravity = 0;
+    //The ARM_FULL term is needed to scale from -1 to +1 back to -1000 to 1000
+    if(ARM_FULL * armPositionCurrent > ARM_POT_STRAIGHT_OUT)
+    {
+      wristAngleRealtiveToGravity  = wristAngle + armAngle;
+    }
+    else
+    {
+      wristAngleRealtiveToGravity = wristAngle - armAngle;
+    }
+    //------ Now that we know the arma dn wrist angles relative to gravity, determine the feed forweard terms ---------    
+    feedForwardArm   = ARM_NEEDED_COMPENSATION_STRAIGHT_OUT * Math.cos(Math.toRadians(armAngle));
+    feedForwardWrist = WRIST_NEEDED_COMPENSATION_STRAIGHT_OUT * Math.cos(Math.toRadians(wristAngleRealtiveToGravity));
+
+    //----- print the results ---------------------------------------------------------------------------------------------
     if(printCounter%10 == 0)//print every 20*10 = 200mS
     {
-      System.out.printf("C:T:P %.2f : %.2f : %.3f  :  %.2f : %.2f : %.4f\n", 
+      System.out.printf("C:T:P:A:F %.2f : %.2f : %.3f %.2f %.3f :  %.2f : %.2f : %.3f %.2f %.3f\n", 
                                               armPositionCurrent,
                                               armPositionTarget,
-                                              pidOutputArm,  
+                                              pidOutputArm,
+                                              armAngle,
+                                              feedForwardArm,  
                                               wristPositionCurrent,
                                               wristPositionTarget,
-                                              pidOutputWrist);
+                                              pidOutputWrist,
+                                              wristAngle,
+                                              feedForwardWrist);
     }
     printCounter++;
    
@@ -255,12 +308,12 @@ public class ArmWrist {
     switch(selectedBot_local)
     {
       case PEANUT:
-        armGroup.set(pidOutputArm);
+        armGroup.set(pidOutputArm);//TODO add feedForwardArm term aftr it is printing correctly
         //Lowly peanut has no wrist
         break;
       case WM2019_BAG:
       case WM2019_2ND:
-        armGroup.set(pidOutputArm);
+        armGroup.set(pidOutputArm);//TODO add feedForwardArm term aftr it is printing correctly
         wrist.set(pidOutputWrist);     
         break;
     }
