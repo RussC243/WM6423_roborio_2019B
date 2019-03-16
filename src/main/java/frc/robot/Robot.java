@@ -34,7 +34,7 @@ public class Robot extends TimedRobot {
   DriveTrain      dTrain   = new DriveTrain(selectedBot);
   ArmWrist        armWrist = new ArmWrist(selectedBot);
   Pneumatics      air      = new Pneumatics(selectedBot);
-   
+  Intake          intake   = new Intake();
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -74,6 +74,11 @@ public class Robot extends TimedRobot {
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
+    
+    System.out.printf("autonomousInit\n"); 
+    armWrist.armPositionTarget = armWrist.ARM_ANGLE_FULL_DOWN;//starting position 
+    armWrist.wristPositionTarget = armWrist.ARM_ANGLE_FULL_UP;
+    linkPack(); //This year driver can drive during autonomous.
   }
 
   /**
@@ -95,8 +100,8 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     System.out.printf("teleopInit\n"); 
-    armWrist.armPositionTarget = 0.1234;
-    armWrist.wristPositionTarget = 0.1234; 
+    armWrist.armPositionTarget = armWrist.ARM_ANGLE_FULL_DOWN;//starting position 
+    armWrist.wristPositionTarget = armWrist.ARM_ANGLE_FULL_UP; 
   }
 
   /**
@@ -104,10 +109,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    linkJoyStickToDrive();
-    linkJoyStickToArmWrist();
-    linkJoyStickToPneumatics();
-    armWrist.processPIDs();
+    linkPack();//link the joystick to the hardware
   }
 
   /**
@@ -116,6 +118,36 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
   }
+
+  /** a handfull of methods that are easier to read when separate but usually called together  */
+  private void linkPack()
+  {
+    linkJoyStickToIntake();
+    linkJoyStickToDrive();
+    linkJoyStickToPneumatics();
+    linkJoyStickToArmWrist();             //sets the target values
+    armWrist.processPIDsAndDriveMotors(); //drives the motors to match the targets using PIDs
+  }
+  
+  public void linkJoyStickToIntake()
+  {
+    if(joy.getRawAxis(hMap.axisTriggerIntakeIn) > 0.1)
+    {
+      intake.driveMotorIn(1);
+    }
+    else
+    {
+      if(joy.getRawAxis(hMap.axisTriggerIntakeOut) > 0.1)
+      {
+        intake.driveMotorIn(-1);
+      }
+      else
+      {
+        intake.driveMotorIn(0);
+      }
+    }
+  }
+ 
 
   public void linkJoyStickToDrive()
   {
@@ -155,16 +187,14 @@ public class Robot extends TimedRobot {
     }
     */
     //---- Control the drop wheels. ------------------
-    /* TODO: find out the trigger axis ID using the driver station and set in the hardare map. 
-    Then un-comment this code
-    
-    if(joy.getRawAxis(hMap.axisLeftTrigger) > 0.2)
+   /* 
+    if(joy.getRawAxis(hMap.???) > 0.2)
     {
-      air.driveDropWheels(joy.getRawAxis(hMap.axisLeftTrigger));
+      air.driveDropWheels(joy.getRawAxis(hMap.???));
     }
-    else if(joy.getRawAxis(hMap.axisRightTrigger) > 0.2)
+    else if(joy.getRawAxis(hMap.???) > 0.2)
     {
-      air.driveDropWheels(joy.getRawAxis(hMap.axisRightTrigger));
+      air.driveDropWheels(joy.getRawAxis(hMap.???));
     }
     else
     {

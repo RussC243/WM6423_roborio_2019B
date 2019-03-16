@@ -23,7 +23,7 @@ public class HardwareMap {
   public  final int canID_PCM                   = 6;  //can ID 6
   public  final int canID_PDP                   = 7;  //can ID 7
   //Intake motor: Spark PWM  
-  public  final int intakeMotor           = 4; //next PWM is at 4 to be common with peanut 
+  public  final int motorIntake           = 4; //next PWM is at 4 to be common with peanut 
   //Wrist, Spark PWM. 
   public  final int wristMotor            = 5; //PWM 
   //Climb wheels, Spark PWM
@@ -39,8 +39,8 @@ public class HardwareMap {
   // compressors
   public  final int pneumaticCompressor = 0 ;
   // sensors
-  public  final int armPot    = 0;
-  public  final int wristPot  = 1;
+  public  final int potArm    = 0;
+  public  final int potWrist  = 1;
   //Joystick - This is the IZT brand,  generic USB joystick
   private final int buttonA             = 1; //arm down, cycle
   public  final int buttonArmCycleDown  = buttonA;
@@ -58,15 +58,15 @@ public class HardwareMap {
   private final int axisLeftY           = 1; //tank drive left
   public  final int axisTankDriveLeft   = axisLeftY;
   private final int axisTriggerLeft     = 2; //x
+  public  final int axisTriggerIntakeOut= axisTriggerLeft;
   private final int axisTriggerRight    = 3; //x
+  public  final int axisTriggerIntakeIn = axisTriggerRight;
   private final int axisRightX          = 4; //x
   private final int axisRightY          = 5; //tank drive right
   public  final int axisTankDriveRight  = axisRightY;
   
   public final int buttonHatchPush      = 77777;//TODO: map these place holders
   public final int buttonHatchPull      = 77777;
-  public final int axisLeftTrigger      = 77777;
-  public final int axisRightTrigger     = 77777;
   
   //Power Distribution Panel
   public  final int PDP_driveMotorLeftFront 	= 3;//TODO: replace these place holders 

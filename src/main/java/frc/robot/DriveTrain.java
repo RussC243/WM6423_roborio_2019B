@@ -35,6 +35,7 @@ public class DriveTrain
   WPI_TalonSRX	driveRightFront_2nd;
   WPI_TalonSRX	driveRightRear_2nd; 
   // general
+  HardwareMap hMap;
   SpeedController leftSpeedGroup; 
   SpeedController rightSpeedGroup;
   DifferentialDrive diffDrive;
@@ -42,6 +43,7 @@ public class DriveTrain
   
   public DriveTrain(OurBots selectedBot)//constructor
   {
+    hMap = new HardwareMap();
     switch(selectedBot)
     {
       case PEANUT:
@@ -50,20 +52,20 @@ public class DriveTrain
         diffDrive = new DifferentialDrive(driveLeft_peanut,driveRight_peanut);
         break;
       case WM2019_2ND:
-        driveLeftFront_2nd  = new VictorSP(0);
-        driveLeftRear_2nd   = new WPI_TalonSRX(1);
-        driveRightFront_2nd = new WPI_TalonSRX(2);
-        driveRightRear_2nd  = new WPI_TalonSRX(3);
+        driveLeftFront_2nd  = new VictorSP(hMap.canID_driveMotorLeftFront);
+        driveLeftRear_2nd   = new WPI_TalonSRX(hMap.canID_driveMotorLeftRear);
+        driveRightFront_2nd = new WPI_TalonSRX(hMap.canID_driveMotorRightFront);
+        driveRightRear_2nd  = new WPI_TalonSRX(hMap.canID_driveMotorRightRear);
         leftSpeedGroup = new SpeedControllerGroup(driveLeftFront_2nd, driveLeftRear_2nd);; 
         rightSpeedGroup = new SpeedControllerGroup(driveRightFront_2nd, driveRightRear_2nd);;
         diffDrive = new DifferentialDrive(leftSpeedGroup,rightSpeedGroup);
         break;
       case WM2019_BAG:
       default:
-        driveLeftFront_bag	= new WPI_VictorSPX(0);	
-        driveLeftRear_bag 	= new WPI_VictorSPX(1);
-        driveRightFront_bag	= new WPI_VictorSPX(2);
-        driveRightRear_bag	= new WPI_VictorSPX(3);
+        driveLeftFront_bag	= new WPI_VictorSPX(hMap.canID_driveMotorLeftFront);	
+        driveLeftRear_bag 	= new WPI_VictorSPX(hMap.canID_driveMotorLeftRear);
+        driveRightFront_bag	= new WPI_VictorSPX(hMap.canID_driveMotorRightFront);
+        driveRightRear_bag	= new WPI_VictorSPX(hMap.PDP_driveMotorRightRear);
         leftSpeedGroup = new SpeedControllerGroup(driveLeftFront_bag, driveLeftRear_bag);; 
         rightSpeedGroup = new SpeedControllerGroup(driveRightFront_bag, driveRightRear_bag);;
         diffDrive = new DifferentialDrive(leftSpeedGroup,rightSpeedGroup);
@@ -73,7 +75,7 @@ public class DriveTrain
   }
   public void drive(double left, double right)
   {
-     if(Math.abs(left)>0.1 || Math.abs(right)>0.1)
+     if(Math.abs(left)>0.1 || Math.abs(right)>0.1) //don't creep
      {
         diffDrive.tankDrive(left*DRIVE_SCALE,right*DRIVE_SCALE);
      }
