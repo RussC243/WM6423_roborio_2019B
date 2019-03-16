@@ -294,13 +294,13 @@ public class ArmWrist {
     switch(selectedBot_local)
     {
       case PEANUT:
-        setArmWithSafetyCheck(pidOutputArm, armPositionCurrent);//TODO add feedForwardArm term aftr it is printing correctly
+        setArmWithSafetyCheck(pidOutputArm, armPositionCurrent);//TODO add feedForwardArm term after it is printing correctly
         //Lowly peanut has no wrist
         break;
       case WM2019_BAG:
       case WM2019_2ND:
         setArmWithSafetyCheck(pidOutputArm, armPositionCurrent);
-        setWristWithSafetyCheck(pidOutputWrist, wristPositionCurrent);//TODO add feedForwardArm term aftr it is printing correctly
+        setWristWithSafetyCheck(pidOutputWrist, wristPositionCurrent);//TODO add feedForwardArm term after it is printing correctly
         break;
     }
   }
