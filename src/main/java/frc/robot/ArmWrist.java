@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/* Copyright (c) 2018 FIRST. All Rights Reserved.                             */
-/* Open Source Software - may be modified and shared by FRC teams. The code   */
-/* must be accompanied by the FIRST BSD license file in the root directory of */
-/* the project.                                                               */
-/*----------------------------------------------------------------------------*/
-
 package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
@@ -29,17 +22,17 @@ public class ArmWrist {
   //*************************************************************************************************************************
   //----- target limits so we dont over rotate ---------------------------
   //These are in units of analog to digital counts returned from the pot sensor
-  final double ARM_POT_FULL_UP       =  150;  //@@@ - record from print output
+  final double ARM_POT_FULL_UP       = -100;  //@@@ - record from print output
   final double ARM_POT_FULL_DOWN     = -650;  //@@@ 
   final double ARM_POT_STRAIGHT_OUT  = -200;  //@@@ 
-  final double ARM_SAFETY_DOWN       = -750;  //@@@ - below this is considered a severed pot wire
-  final double ARM_SAFETY_UP         =  250;  //@@@ - above this is considered a severed pot wire
+  final double ARM_SAFETY_DOWN       = -1.1;  //@@@ - below this is considered a severed pot wire
+  final double ARM_SAFETY_UP         =  1.1;  //@@@ - above this is considered a severed pot wire
 
   final double WRIST_POT_FULL_UP     =  200;  //@@@ 
   final double WRIST_POT_FULL_DOWN   = -200;  //@@@ 
   final double WRIST_POT_STRAIGHT_OUT=   -0;  //@@@ 
-  final double WRIST_SAFETY_DOWN     = -750;  //@@@ - below this is considered a severed pot wire
-  final double WRIST_SAFETY_UP       =  750;  //@@@ - above this is considered a severed pot wire
+  final double WRIST_SAFETY_DOWN     = -1.1;  //@@@ - below this is considered a severed pot wire
+  final double WRIST_SAFETY_UP       =  1.1;  //@@@ - above this is considered a severed pot wire
 
   //------- values needed to calculated the PID feed forward value to compensate for torque caused by the weight of the arm 
   //We will ignore affects of the various wrist positions affecting the torque on the arm joint.
@@ -47,18 +40,18 @@ public class ArmWrist {
   //  relative to gravity.
   final double ARM_ANGLE_FULL_UP    = 50; //@@@ degrees up from straight out  - measure with inclinometer
   final double ARM_ANGLE_FULL_DOWN  = 40; //@@@ degrees down from straight out
-  final double ARM_NEEDED_COMPENSATION_STRAIGHT_OUT = 0.2;  //@@@ measure by looking at print of PID out value with no compensation
+  final double ARM_NEEDED_COMPENSATION_STRAIGHT_OUT = 0.0;  //@@@ measure by looking at print of PID out value with no compensation
   final double WRIST_ANGLE_FULL_UP  = 90; //@@@ degrees up relative to arm    
   final double WRIST_ANGLE_FULL_DOWN= 40; //@@@ degrees down relative to arm  
-  final double WRIST_NEEDED_COMPENSATION_STRAIGHT_OUT = 0.2;//@@@ measure by looking at print of PID out value with no compensation
+  final double WRIST_NEEDED_COMPENSATION_STRAIGHT_OUT = 0.0;//@@@ measure by looking at print of PID out value with no compensation
   //------- poses (There are only a hadfull so an array would add more complication than the benifit.) --------
-  final double ARM_POSE_0       = -500; //pick up ball from ground
+  final double ARM_POSE_0       = -300; //pick up ball from ground
   final double WRIST_ARM_POSE_0 =  200;
-  final double ARM_POSE_1       = -300; //hatch level 1
+  final double ARM_POSE_1       = -250; //hatch level 1
   final double WRIST_ARM_POSE_1 =  100;
-  final double ARM_POSE_2       = -100; //hatch level 2
+  final double ARM_POSE_2       = -200; //hatch level 2
   final double WRIST_ARM_POSE_2 =    0;
-  final double ARM_POSE_3       =  100; //hatch level 3
+  final double ARM_POSE_3       = -150;//hatch level 3
   final double WRIST_ARM_POSE_3 = -100;
   private int poseSelection             = 1;    //initial pose
   final private int POSE_HIGHEST_DEFINED= 3;    //poses 0 to 3 are defined so far
@@ -98,7 +91,7 @@ public class ArmWrist {
   final double I_ARM = 0.005;
   final double D_ARM = 0.0;
   MiniPID pidWrist;
-  final double P_WRIST = 0.55;
+  final double P_WRIST = 0.8;
   final double I_WRIST = 0.0;
   final double D_WRIST = 0.0;
   
@@ -220,31 +213,19 @@ public class ArmWrist {
         System.out.printf("*** Logic Error *** bad pose bozo - please fix your code");
         break;
     }
-
-    //---- process the wrist ------------------
-    if(up && wristPositionTarget < WRIST_POT_FULL_UP)
-    {
-      wristPositionTarget += FAST_MOTION_FACTOR;
-    }
-    else
-    {
-      if(down && wristPositionTarget > WRIST_POT_FULL_DOWN)
-      {
-        wristPositionTarget -= FAST_MOTION_FACTOR;
-      }
-    }
   }
   
   public void processPIDsAndDriveMotors()
   {
     //----- Read the pots, cycle the PIDs and store the PID outputs  -----------------------------------------------------
     armPositionCurrent   = potArm.get()/ARM_DIGITAL_RANGE - 1.0;  //map [0 to 2.0] to [-1.0 to 1.0]
-    wristPositionCurrent = potWrist.get()/WRIST_DIGITAL_RANGE - 1.0; 
+    wristPositionCurrent = -(potWrist.get()/WRIST_DIGITAL_RANGE - 1.0); //TODO: why negative?
     //For each PID cycle, pass in the current and target positions. 
     //The needed drive to eliminate error is returned from the PID.
     //Simple as that :)
     //sensor target
     double pidOutputArm   = -pidArm.getOutput(armPositionCurrent, armPositionTarget/ARM_DIGITAL_RANGE); //output range is -1000 to +1000
+    //TODO: why negative?
     double pidOutputWrist = -pidWrist.getOutput(wristPositionCurrent, wristPositionTarget/WRIST_DIGITAL_RANGE);
     //The variable torque caused by the weight of the arm and wrist makes for bad PID behavior so we need to add
     // a feed forward term which is an offset that is dependant of the angles of the joint.
@@ -308,9 +289,9 @@ public class ArmWrist {
   /** This method checks to makes sure the arm pot sensor wire is not broken then drives the motors */
   private void setArmWithSafetyCheck(double driveValue, double potValueSafetyCheckValue)
   {
-    if(potValueSafetyCheckValue < ARM_SAFETY_UP && potValueSafetyCheckValue > ARM_SAFETY_UP)
+    if(potValueSafetyCheckValue < ARM_SAFETY_UP && potValueSafetyCheckValue > ARM_SAFETY_DOWN)
     {
-      armGroup.set(driveValue);
+     //zzz armGroup.set(driveValue);
     }
     else
     {
@@ -324,7 +305,8 @@ public class ArmWrist {
   {
     if(potValueSafetyCheckValue < WRIST_SAFETY_UP && potValueSafetyCheckValue > WRIST_SAFETY_DOWN)
     {
-      wrist.set(driveValue);
+      //System.out.printf("direct wrist %.2f\n", -driveValue);
+      wrist.set(-driveValue);
     }
     else
     {

@@ -1,11 +1,4 @@
-/*----------------------------------------------------------------------------*/
-/* Copyright (c) 2018 FIRST. All Rights Reserved.                             */
-/* Open Source Software - may be modified and shared by FRC teams. The code   */
-/* must be accompanied by the FIRST BSD license file in the root directory of */
-/* the project.                                                               */
-/*----------------------------------------------------------------------------*/
 package frc.robot;
-
 /**
  This class defines how the roborio for each robot is wired to its peripheral hardware
   and what that hardware does. This abstracts the details so all numbers are in one place 
@@ -67,8 +60,10 @@ public class HardwareMap {
   private final int axisRightY          = 5; 
   public  final int axisTankDriveRight  = axisRightY;
   
-  public final int buttonHatchPush      = 77777;//TODO: map these place holders
-  public final int buttonHatchPull      = 77777;
+  public final int buttonHatchPush              = 77777;//TODO: map these place holders
+  public final int buttonHatchPull              = 77777;
+  public final int buttonDropWheelsDriveForward = 77777;
+  public final int buttonDropWheelsDriveReverse = 77777;
   
   //Power Distribution Panel
   public  final int PDP_driveMotorLeftFront 	= 3;//TODO: replace these place holders 

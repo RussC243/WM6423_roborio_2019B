@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */
-/* Open Source Software - may be modified and shared by FRC teams. The code   */
-/* must be accompanied by the FIRST BSD license file in the root directory of */
-/* the project.                                                               */
-/*----------------------------------------------------------------------------*/
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -29,12 +23,12 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
   
-  Joystick        joy      = new Joystick(0);     //popular and generic, IZT brand joystick
-  HardwareMap     hMap     = new HardwareMap();   //This defines what inputs and outputs are connectedd to roborio
-  DriveTrain      dTrain   = new DriveTrain(selectedBot);
-  ArmWrist        armWrist = new ArmWrist(selectedBot);
-  Pneumatics      air      = new Pneumatics(selectedBot);
-  Intake          intake   = new Intake();
+  Joystick        joy       = new Joystick(0);     //popular and generic, IZT brand joystick
+  HardwareMap     hMap      = new HardwareMap();   //This defines what inputs and outputs are connectedd to roborio
+  DriveTrain      dTrain    = new DriveTrain(selectedBot);
+  ArmWrist        armWrist  = new ArmWrist(selectedBot);
+  Pneumatics      air       = new Pneumatics(selectedBot);
+  Intake          intake    = new Intake();
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -125,7 +119,7 @@ public class Robot extends TimedRobot {
     linkJoyStickToIntake();
     linkJoyStickToDrive();
     linkJoyStickToPneumatics();
-    linkJoyStickToArmWrist();             //sets the target values
+    linkJoyStickToArmWrist();             //sets the target 
     armWrist.processPIDsAndDriveMotors(); //drives the motors to match the targets using PIDs
   }
   
@@ -157,7 +151,7 @@ public class Robot extends TimedRobot {
   {
     armWrist.upDownManual(joy.getRawButton(hMap.buttonArmManualUp), joy.getRawButton(hMap.buttonArmManualDown));
     armWrist.upDownCycle( joy.getRawButton(hMap.buttonArmCycleUp), joy.getRawButton(hMap.buttonArmCycleDown)); 
-    // armWrist.upDownWristOnly(joy.getPOV());
+    //armWrist.upDownWristOnly(joy.getPOV());
   
   }
   public void linkJoyStickToPneumatics()
@@ -174,32 +168,30 @@ public class Robot extends TimedRobot {
       air.rearExtend();
     }
     
+    /*TODO: Find unused buttons on controller for the hatch and drop wheels
+       add them to the hardware map then un-comment this code.
     //---- Control the hatch pistons. ------------------
-    /*TODO: Find unused buttons on controller, add them to map and un-comment this code
-    
     if(joy.getRawButton(hMap.buttonHatchPull))
-    //{
+    {
       air.hatchRetract();
     }
     if(joy.getRawButton(hMap.buttonHatchPush))
     {
       air.hatchExtend();
     }
-    */
     //---- Control the drop wheels. ------------------
-   /* 
-    if(joy.getRawAxis(hMap.???) > 0.2)
+    if(joy.getRawButton(hMap.buttonDropWheelsDriveForward))
     {
-      air.driveDropWheels(joy.getRawAxis(hMap.???));
+      air.driveDropWheels(1.0);
     }
-    else if(joy.getRawAxis(hMap.???) > 0.2)
+    else if(joy.getRawButton(hMap.buttonDropWheelsDriveReverse))
     {
-      air.driveDropWheels(joy.getRawAxis(hMap.???));
+      air.driveDropWheels(-1.0);
     }
     else
     {
       air.driveDropWheels(0);
     }
-    */
+    */ 
   }
 }

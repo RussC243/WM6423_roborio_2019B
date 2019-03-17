@@ -6,12 +6,11 @@
  * The two pneumatic wheels will be used when the robot has elevated itself as it climbs up
  * the ramp. 
  * 
- * The robot should be able to come and down with the pneumatics because the front and back 
- * pneumatic systems are independent of each other. 
+ * The front and back pneumatic systems are independent of each other. 
  * ***/
 
-/*TODO: Need to write method to make sure the pneumatic drive motors do not burn out when 
-  they recieve too much current. 
+/*TODO: Need to write method to make sure the drop wheel motors do not burn out when 
+  they draw too much current. 
   */
 package frc.robot;
 import edu.wpi.first.wpilibj.*;
@@ -55,27 +54,27 @@ public Pneumatics(OurBots selectedBot)//constructor
     pneumaticWheelLeft   = new Spark(hMap.climbWheelRight); 
     pnuematicGroup       = new SpeedControllerGroup(pneumaticWheelLeft, pneumaticWheelRight);
     //There are 3 pnuematic control devices, each with 2 solenoids. One extends piston and one retracts piston.
-    pneumatic_front_up   = new Solenoid(hMap.canID_PCM, hMap.pnuematic_front_up); //CAN ID for PCM, position on PCM
-    pneumatic_front_down = new Solenoid(hMap.canID_PCM, hMap.pnuematic_front_down); 
-    pneumatic_rear_up    = new Solenoid(hMap.canID_PCM, hMap.pnuematic_rear_up);
-    pneumatic_rear_down  = new Solenoid(hMap.canID_PCM, hMap.pnuematic_rear_down); 
-    pneumatic_hatch_pull = new Solenoid(hMap.canID_PCM, hMap.pnuematic_hatch_pull);
-    pneumatic_hatch_push = new Solenoid(hMap.canID_PCM, hMap.pnuematic_hatch_push); 
+    //zzz  pneumatic_front_up   = new Solenoid(hMap.canID_PCM, hMap.pnuematic_front_up); //CAN ID for PCM, position on PCM
+    //zzz  pneumatic_front_down = new Solenoid(hMap.canID_PCM, hMap.pnuematic_front_down); 
+    //zzz  pneumatic_rear_up    = new Solenoid(hMap.canID_PCM, hMap.pnuematic_rear_up);
+    //zzz  pneumatic_rear_down  = new Solenoid(hMap.canID_PCM, hMap.pnuematic_rear_down); 
+    //zzz   pneumatic_hatch_pull = new Solenoid(hMap.canID_PCM, hMap.pnuematic_hatch_pull);
+    //zzz   pneumatic_hatch_push = new Solenoid(hMap.canID_PCM, hMap.pnuematic_hatch_push); 
     //Set up the 6 newly created objects
-    pneumatic_front_up.setPulseDuration(PULSE_DURATION); //PCM emits a pulse lasting 1.01 seconds. 
-    pneumatic_front_up.startPulse();                    //pulse generated. 
-    pneumatic_front_down.setPulseDuration(PULSE_DURATION);
-    pneumatic_front_down.startPulse(); 
+    //zzz  pneumatic_front_up.setPulseDuration(PULSE_DURATION); //PCM emits a pulse lasting 1.01 seconds. 
+    //zzz  pneumatic_front_up.startPulse();                    //pulse generated. 
+    //zzz  pneumatic_front_down.setPulseDuration(PULSE_DURATION);
+    //zzz  pneumatic_front_down.startPulse(); 
     //--
-    pneumatic_rear_up.setPulseDuration(PULSE_DURATION);  
-    pneumatic_rear_up.startPulse(); //pulse generated. 
-    pneumatic_rear_down.setPulseDuration(PULSE_DURATION);
-    pneumatic_rear_down.startPulse(); 
+    //zzz  pneumatic_rear_up.setPulseDuration(PULSE_DURATION);  
+    //zzz  pneumatic_rear_up.startPulse(); //pulse generated. 
+    //zzz  pneumatic_rear_down.setPulseDuration(PULSE_DURATION);
+    //zzz  pneumatic_rear_down.startPulse(); 
     //--
-    pneumatic_hatch_pull.setPulseDuration(PULSE_DURATION);  
-    pneumatic_hatch_pull.startPulse(); //pulse generated. 
-    pneumatic_hatch_push.setPulseDuration(PULSE_DURATION);
-    pneumatic_hatch_push.startPulse(); 
+    //zzz  pneumatic_hatch_pull.setPulseDuration(PULSE_DURATION);  
+    //zzz  pneumatic_hatch_pull.startPulse(); //pulse generated. 
+    //zzz  pneumatic_hatch_push.setPulseDuration(PULSE_DURATION);
+    //zzz  pneumatic_hatch_push.startPulse(); 
     break;
   }
 }//end constructor
@@ -83,33 +82,33 @@ public Pneumatics(OurBots selectedBot)//constructor
 //Methods for Solenoid state. Setting them on turn them on while
 public void frontExtend()  
 {
-  pneumatic_front_up.set(true);
-  pneumatic_front_down.set(false);
+  //zzz  pneumatic_front_up.set(true);
+  //zzz  pneumatic_front_down.set(false);
 }
 public void frontRetract()  
 {
-  pneumatic_front_down.set(true);
-  pneumatic_front_up.set(false);
+  //zzz  pneumatic_front_down.set(true);
+  //zzz  pneumatic_front_up.set(false);
 }
 public void rearExtend()  
 {
-  pneumatic_rear_up.set(true);
-  pneumatic_rear_down.set(false);
+  //zzz  pneumatic_rear_up.set(true);
+  //zzz  pneumatic_rear_down.set(false);
 }
 public void rearRetract()  
 {
-  pneumatic_rear_down.set(true);
-  pneumatic_rear_up.set(false);
+    //zzz  pneumatic_rear_down.set(true);
+    //zzz  pneumatic_rear_up.set(false);
 }
 public void hatchExtend()  
 {
-  pneumatic_hatch_push.set(true);
-  pneumatic_hatch_pull.set(false);
+  //zzz  pneumatic_hatch_push.set(true);
+  //zzz  pneumatic_hatch_pull.set(false);
 }
 public void hatchRetract()  
 {
-  pneumatic_hatch_pull.set(true);
-  pneumatic_hatch_push.set(false);
+  //zzz  pneumatic_hatch_pull.set(true);
+  //zzz  pneumatic_hatch_push.set(false);
 }
   
 //place holder method... add 5 more if needed
@@ -125,12 +124,12 @@ public boolean isFrontUpOn() //Checks to see if the front solenoid is on.
 
 public void driveDropWheels(double value) 
 { 
-    pnuematicGroup.set(value);
+  //zzz    pnuematicGroup.set(value);
 }
 public void setSolenoidPulseTimes(double duration) 
 {
-  //Sets the amount of seconds of the pulse is controlled by the PCM and triggers the PCM to make 
-  //a pulse of the duration passsed in the 'duration' parameter of this method. 
+  //Sets the pulse duration, controlled by the PCM and triggers the PCM to make 
+  //a pulse of that duration. 
   pneumatic_front_down.setPulseDuration(duration);
   pneumatic_front_up.setPulseDuration(duration);
   pneumatic_rear_down.setPulseDuration(duration);
