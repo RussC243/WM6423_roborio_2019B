@@ -1,18 +1,9 @@
-/*----------------------------------------------------------------------------*/
-/* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */
-/* Open Source Software - may be modified and shared by FRC teams. The code   */
-/* must be accompanied by the FIRST BSD license file in the root directory of */
-/* the project.                                                               */
-/*----------------------------------------------------------------------------*/
-
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.GenericHID.Hand;
-
+import edu.wpi.first.wpilibj.Joystick;
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the TimedRobot
@@ -25,12 +16,13 @@ public class Robot extends TimedRobot {
   {
     PEANUT, WM2019_BAG, WM2019_2ND //The peanut is Russ' test bot. The bag bot is the one in the bag. The 2nd is the spare bot
   }
-  OurBots selectedBot = OurBots.WM2019_2ND; //set the bot to the one you are working with
+  final OurBots selectedBot = OurBots.WM2019_2ND; //set the bot to the one you are working with
 
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
+<<<<<<< HEAD
 
   HardwareMap hMap = new HardwareMap();   //This defines what inputs and outputs are connectedd to roborio
   DriveTrain driveTrain = new DriveTrain(selectedBot); //Subsystem for the robot's drivebase. 
@@ -38,6 +30,15 @@ public class Robot extends TimedRobot {
   public XboxController xCon = new XboxController(xboxPort);
   Pneumatics pneumatics = new Pneumatics(selectedBot); //Pneumatics subsystem.
 
+=======
+  
+  Joystick        joy       = new Joystick(0);     //popular and generic, IZT brand joystick
+  HardwareMap     hMap      = new HardwareMap();   //This defines what inputs and outputs are connectedd to roborio
+  DriveTrain      dTrain    = new DriveTrain(selectedBot);
+  ArmWrist        armWrist  = new ArmWrist(selectedBot);
+  Pneumatics      air       = new Pneumatics(selectedBot);
+  Intake          intake    = new Intake();
+>>>>>>> e99fd21d91b28bdffb47a5b744b680e0d2d58351
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -77,6 +78,11 @@ public class Robot extends TimedRobot {
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
+    
+    System.out.printf("autonomousInit\n"); 
+    armWrist.armPositionTarget = armWrist.ARM_ANGLE_FULL_DOWN;//starting position 
+    armWrist.wristPositionTarget = armWrist.ARM_ANGLE_FULL_UP;
+    linkPack(); //This year driver can drive during autonomous.
   }
 
   /**
@@ -95,12 +101,19 @@ public class Robot extends TimedRobot {
     }
   }
 
+  @Override
+  public void teleopInit() {
+    System.out.printf("teleopInit\n"); 
+    armWrist.armPositionTarget = armWrist.ARM_ANGLE_FULL_DOWN;//starting position 
+    armWrist.wristPositionTarget = armWrist.ARM_ANGLE_FULL_UP; 
+  }
+
   /**
    * This function is called periodically during operator control.
    */
   @Override
   public void teleopPeriodic() {
-    linkJoyStickToDrive();
+    linkPack();//link the joystick to the hardware
   }
 
   /**
@@ -110,10 +123,90 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {
   }
 
+<<<<<<< HEAD
   //Following functions are commands linking a subsystem to joysticks/main robot class. 
+=======
+  /** a handfull of methods that are easier to read when separate but usually called together  */
+  private void linkPack()
+  {
+    linkJoyStickToIntake();
+    linkJoyStickToDrive();
+    linkJoyStickToPneumatics();
+    linkJoyStickToArmWrist();             //sets the target 
+    armWrist.processPIDsAndDriveMotors(); //drives the motors to match the targets using PIDs
+  }
+  
+  public void linkJoyStickToIntake()
+  {
+    if(joy.getRawAxis(hMap.axisTriggerIntakeIn) > 0.1)
+    {
+      intake.driveMotorIn(1);
+    }
+    else
+    {
+      if(joy.getRawAxis(hMap.axisTriggerIntakeOut) > 0.1)
+      {
+        intake.driveMotorIn(-1);
+      }
+      else
+      {
+        intake.driveMotorIn(0);
+      }
+    }
+  }
+ 
+
+>>>>>>> e99fd21d91b28bdffb47a5b744b680e0d2d58351
   public void linkJoyStickToDrive()
   {
-    driveTrain.drive(xCon.getY(Hand.kLeft), xCon.getY(Hand.kRight));
+    dTrain.drive(joy.getRawAxis(hMap.axisTankDriveLeft),joy.getRawAxis(hMap.axisTankDriveRight)); //left and right veritcal axis
+  }
+  public void linkJoyStickToArmWrist()
+  {
+    armWrist.upDownManual(joy.getRawButton(hMap.buttonArmManualUp), joy.getRawButton(hMap.buttonArmManualDown));
+    armWrist.upDownCycle( joy.getRawButton(hMap.buttonArmCycleUp), joy.getRawButton(hMap.buttonArmCycleDown)); 
+    //armWrist.upDownWristOnly(joy.getPOV());
+  
+  }
+  public void linkJoyStickToPneumatics()
+  {
+    //---- Control the climb pistons. ------------------
+    if(joy.getRawButton(hMap.buttonClimbDown))
+    {
+      air.frontRetract();
+      air.rearRetract();
+    }
+    if(joy.getRawButton(hMap.buttonClimbUp))
+    {
+      air.frontExtend();
+      air.rearExtend();
+    }
+    
+    /*TODO: Find unused buttons on controller for the hatch and drop wheels
+       add them to the hardware map then un-comment this code.
+    //---- Control the hatch pistons. ------------------
+    if(joy.getRawButton(hMap.buttonHatchPull))
+    {
+      air.hatchRetract();
+    }
+    if(joy.getRawButton(hMap.buttonHatchPush))
+    {
+      air.hatchExtend();
+    }
+    //---- Control the drop wheels. ------------------
+    if(joy.getRawButton(hMap.buttonDropWheelsDriveForward))
+    {
+      air.driveDropWheels(1.0);
+    }
+    else if(joy.getRawButton(hMap.buttonDropWheelsDriveReverse))
+    {
+      air.driveDropWheels(-1.0);
+    }
+    else
+    {
+      air.driveDropWheels(0);
+    }
+    */ 
   }
 
   public void linkJoyStickButtonsToArmWrist() 
