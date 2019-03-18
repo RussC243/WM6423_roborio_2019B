@@ -22,15 +22,6 @@ public class Robot extends TimedRobot {
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
-<<<<<<< HEAD
-
-  HardwareMap hMap = new HardwareMap();   //This defines what inputs and outputs are connectedd to roborio
-  DriveTrain driveTrain = new DriveTrain(selectedBot); //Subsystem for the robot's drivebase. 
-  public static final int xboxPort = 0;
-  public XboxController xCon = new XboxController(xboxPort);
-  Pneumatics pneumatics = new Pneumatics(selectedBot); //Pneumatics subsystem.
-
-=======
   
   Joystick        joy       = new Joystick(0);     //popular and generic, IZT brand joystick
   HardwareMap     hMap      = new HardwareMap();   //This defines what inputs and outputs are connectedd to roborio
@@ -38,7 +29,6 @@ public class Robot extends TimedRobot {
   ArmWrist        armWrist  = new ArmWrist(selectedBot);
   Pneumatics      air       = new Pneumatics(selectedBot);
   Intake          intake    = new Intake();
->>>>>>> e99fd21d91b28bdffb47a5b744b680e0d2d58351
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -123,9 +113,6 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {
   }
 
-<<<<<<< HEAD
-  //Following functions are commands linking a subsystem to joysticks/main robot class. 
-=======
   /** a handfull of methods that are easier to read when separate but usually called together  */
   private void linkPack()
   {
@@ -140,23 +127,28 @@ public class Robot extends TimedRobot {
   {
     if(joy.getRawAxis(hMap.axisTriggerIntakeIn) > 0.1)
     {
-      intake.driveMotorIn(1);
+      intake.driveMotorIn(0.7);
     }
-    else
-    {
-      if(joy.getRawAxis(hMap.axisTriggerIntakeOut) > 0.1)
+    //else Inclusion of else statement might mess up code logic. 
+    //{
+else{
+    if(joy.getRawAxis(hMap.axisTriggerIntakeOut) > 0.1)
       {
-        intake.driveMotorIn(-1);
+        intake.driveMotorIn(-0.7);
       }
-      else
+
+    else
       {
         intake.driveMotorIn(0);
       }
     }
+    //}
+    System.out.println("Axis Trigger Intake value:" + joy.getRawAxis(hMap.axisTriggerIntakeIn) );
+    System.out.println("Axis Trigger Intake value:" + joy.getRawAxis(hMap.axisTriggerIntakeOut) );
+
   }
  
 
->>>>>>> e99fd21d91b28bdffb47a5b744b680e0d2d58351
   public void linkJoyStickToDrive()
   {
     dTrain.drive(joy.getRawAxis(hMap.axisTankDriveLeft),joy.getRawAxis(hMap.axisTankDriveRight)); //left and right veritcal axis
@@ -207,37 +199,5 @@ public class Robot extends TimedRobot {
       air.driveDropWheels(0);
     }
     */ 
-  }
-
-  public void linkJoyStickButtonsToArmWrist() 
-  {
-    //left_button - manual arm down. Right_button - manual arm up. 
-
-    
-  }
-
-  public void linkJoyStickButtonsToPnuematics() 
-  {
-    /*** Method for linking pneumatic commmands to joystick buttons.
-     * TODO: Resolve which buttons are for which command. 
-     * Also, should we change xCon to the IZT (generic HID)? 
-     * Formula: 
-     * Button condition - pnuematic command performed. 
-    */
-
-    if(xCon.getAButtonPressed() )
-    {
-      pneumatics.frontExtend(); //Extends front pneumatic system.
-    }
-
-    if(xCon.getBButtonPressed()) 
-    {
-      pneumatics.frontRetract(); // Retracts front pneumatic system. 
-    }
-      //More examples need to be made. 
-      
-    
-
-
   }
 }

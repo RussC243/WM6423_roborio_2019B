@@ -52,7 +52,7 @@ public class ArmWrist {
   final double ARM_POSE_2       = -200; //hatch level 2
   final double WRIST_ARM_POSE_2 =    0;
   final double ARM_POSE_3       = -150;//hatch level 3
-  final double WRIST_ARM_POSE_3 = -100;
+  final double WRIST_ARM_POSE_3 = -100; //Default: 100. 
   private int poseSelection             = 1;    //initial pose
   final private int POSE_HIGHEST_DEFINED= 3;    //poses 0 to 3 are defined so far
 
@@ -81,37 +81,6 @@ public class ArmWrist {
   AnalogPotentiometer potArm;
   AnalogPotentiometer potWrist;  
 
-<<<<<<< HEAD
-  //at 20mS per update, changing target from zero to full up or full down would take 1000*0.020 = 20 sec
-  //So to speed the motion we will change target by the factor every 20mS.
-  int FAST_MOTION_FACTOR      = 1; //20 sec divided by 10 = 2 sec for full travel up or down from center position
-  double ARM_FULL             = 1000; //range is -1000 to +1000
-  double WRIST_FULL           = 1000;
-  double armPositionCurrent   = 0;
-  double armPositionTarget    = 0;
-  double wristPositionCurrent = 0; 
-  double wristPositionTarget  = 0;
-  double ARM_UP_LIMIT        = 300;//for now stay near center so we don't break the new pots
-  double ARM_DOWN_LIMIT      = -300;
-  double WRIST_UP_LIMIT      = 300;
-  double WRIST_DOWN_LIMIT    = -300;
-   
-  MiniPID pidArm;
-  double P_ARM = 0.55;
-  double I_ARM = 0.0;
-  double D_ARM = 0.0;
-  
-  MiniPID pidWrist;
-  double P_WRIST = 0.55;
-  double I_WRIST = 0.0;
-  double D_WRIST = 0.0;
-  
-  int printCounter = 0; //used to reduce the print frequency
-  OurBots selectedBot_local; //copy so we can pass in one in constructor
-  public ArmWrist(OurBots selectedBot)//constructor
-  {
-    selectedBot_local = selectedBot;
-=======
   double armPositionCurrent      = 0;
   double armPositionTarget       = 0;
   double wristPositionCurrent    = 0; 
@@ -133,7 +102,6 @@ public class ArmWrist {
   {
     hMap = new HardwareMap();
     selectedBot_local = selectedBot; //copy to be used by other methods of this class
->>>>>>> e99fd21d91b28bdffb47a5b744b680e0d2d58351
     //arm PID
     pidArm = new MiniPID(P_ARM,I_ARM,D_ARM);
     pidArm.setSetpoint(0.0);            //center of travel
@@ -148,13 +116,8 @@ public class ArmWrist {
     pidArm.setDirection(true); //true is reversed
     pidWrist.reset();  
     // pots
-<<<<<<< HEAD
-    potArm   = new AnalogPotentiometer(0, 2 * ARM_FULL, 0); //channel, range, offset; [0 to 2000] will map to [-1.0 to +1.0] when read
-    potWrist = new AnalogPotentiometer(1, 2 * WRIST_FULL, 0); 
-=======
-    potArm   = new AnalogPotentiometer(hMap.potArm, 2 * ARM_DIGITAL_RANGE, 0); //channel, range, offset; [0 to 2000] will map to [-1.0 to +1.0] when read
+   potArm   = new AnalogPotentiometer(hMap.potArm, 2 * ARM_DIGITAL_RANGE, 0); //channel, range, offset; [0 to 2000] will map to [-1.0 to +1.0] when read
     potWrist = new AnalogPotentiometer(hMap.potWrist, 2 * WRIST_DIGITAL_RANGE, 0); 
->>>>>>> e99fd21d91b28bdffb47a5b744b680e0d2d58351
 
     switch(selectedBot)
     {
@@ -181,78 +144,6 @@ public class ArmWrist {
         armGroup = new SpeedControllerGroup(armLeft_2nd, armRight_2nd); 
         armGroup.set(0);
         wrist.set(0);
-<<<<<<< HEAD
-        break;
-    }
-  }
-  public void upDownManual(boolean up, boolean down)
-  {
-    //This function only sets the target values. The processPIDs below drives the motors
-    //---- process the arm ------------------
-    if(up && armPositionTarget < ARM_UP_LIMIT)
-    {
-      armPositionTarget += FAST_MOTION_FACTOR;
-    }
-    else
-    {
-      if(down && armPositionTarget > ARM_DOWN_LIMIT)
-      {
-         armPositionTarget -= FAST_MOTION_FACTOR;
-      }
-    }
-    //---- process the wrist ------------------
-    if(up && wristPositionTarget < WRIST_UP_LIMIT)
-    {
-      wristPositionTarget += FAST_MOTION_FACTOR;
-    }
-    else
-    {
-      if(down && wristPositionTarget > WRIST_DOWN_LIMIT)
-      {
-        wristPositionTarget -= FAST_MOTION_FACTOR;
-      }
-    }
-  }
-  public void processPIDs()
-  {
-    //----------------------------------------------------------
-    armPositionCurrent   = potArm.get()/ARM_FULL  - 1.0;  //map [0 to 2.0] to [-1.0 to 1.0]
-    wristPositionCurrent = potWrist.get()/WRIST_FULL - 1.0; 
-    //For each PID cycle, pass in the current and target positions. 
-    //The needed drive to eliminate error is returned from the PID.
-    //Simple as that :)
-    //sensor target
-    double pidOutputArm   = pidArm.getOutput(armPositionCurrent, armPositionTarget/ARM_FULL); //output range is -1000 to +1000
-    double pidOutputWrist = pidWrist.getOutput(wristPositionCurrent, wristPositionTarget/WRIST_FULL);
-    if(printCounter%10 == 0)//print every 20*10 = 200mS
-    {
-      System.out.printf("C:T:P %.0f : %.0f : %.3f  :  %.0f : %.0f : %.4f\n", 
-                                              armPositionCurrent,
-                                              armPositionTarget,
-                                              pidOutputArm,  
-                                              wristPositionCurrent,
-                                              wristPositionTarget,
-                                              pidOutputWrist);
-    }
-    printCounter++;
-   
-    //-------------------------------------------------------------------------
-    //Now that we have the drive levels, drive the motors.
-    //Another case statement is needed as each bot is different.
-    switch(selectedBot_local)
-    {
-      case PEANUT:
-        armGroup.set(pidOutputArm);
-        //Lowly peanut has no wrist
-        break;
-      case WM2019_BAG:
-      case WM2019_2ND:
-        armGroup.set(pidOutputArm);
-        wrist.set(pidOutputWrist);     
-        break;
-    }
-  }
-=======
         break;
     }
   }
@@ -451,5 +342,4 @@ public class ArmWrist {
     }
     return returnAngle;
   }
->>>>>>> e99fd21d91b28bdffb47a5b744b680e0d2d58351
 }

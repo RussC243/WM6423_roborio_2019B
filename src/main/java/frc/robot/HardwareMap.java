@@ -30,35 +30,6 @@ public class HardwareMap {
   public  final int pnuematic_hatch_pull  = 4;
   public  final int pnuematic_hatch_push  = 5;
   // compressors
-<<<<<<< HEAD
-  public  int pneumaticCompressor = 0 ;
-
-// sensors
-  public  int armPot = 0;
-  public  int wristPot = 1;
-  
-  //Joystick - This is the IZT brand,  generic USB joystick
-public int buttonA            = 1;
-public int buttonB            = 2;
-public int buttonX            = 3;
-public int buttonY            = 4;
-public int buttonBumperLeft   = 5;
-public int buttonBumperRight  = 6;
-public int axisLeftX          = 0;
-public int axisLeftY          = 1;
-public int triggerLeft        = 2;
-public int triggerRight       = 3;
-public int axisRightX         = 4;
-public int axisRightY         = 5;
-
-
-  // If you are using multiple modules, make sure to define both the port
-  // number and the module. For example you with a rangefinder:
-  // public static int rangefinderPort = 1;
-  // public static int rangefinderModule = 1;
-
-
-=======
   public  final int pneumaticCompressor = 0 ;
   // sensors
   public  final int potArm    = 0;
@@ -105,5 +76,4 @@ public int axisRightY         = 5;
   public  final int PDP_wristMotor            = 3; 
   public  final int PDP_climbWheelLeft        = 3; 
   public  final int PDP_climbWheelRight       = 3; 
->>>>>>> e99fd21d91b28bdffb47a5b744b680e0d2d58351
 }

@@ -62,17 +62,10 @@ public class DriveTrain
         break;
       case WM2019_BAG:
       default:
-<<<<<<< HEAD
-        driveLeftFront_bag	= new WPI_VictorSPX(0);	
-        driveLeftRear_bag 	= new WPI_VictorSPX(1);
-        driveRightFront_bag	= new WPI_VictorSPX(2); 
-        driveRightRear_bag	= new WPI_VictorSPX(3);
-=======
         driveLeftFront_bag	= new WPI_VictorSPX(hMap.canID_driveMotorLeftFront);	
         driveLeftRear_bag 	= new WPI_VictorSPX(hMap.canID_driveMotorLeftRear);
         driveRightFront_bag	= new WPI_VictorSPX(hMap.canID_driveMotorRightFront);
         driveRightRear_bag	= new WPI_VictorSPX(hMap.PDP_driveMotorRightRear);
->>>>>>> e99fd21d91b28bdffb47a5b744b680e0d2d58351
         leftSpeedGroup = new SpeedControllerGroup(driveLeftFront_bag, driveLeftRear_bag);; 
         rightSpeedGroup = new SpeedControllerGroup(driveRightFront_bag, driveRightRear_bag);;
         diffDrive = new DifferentialDrive(leftSpeedGroup,rightSpeedGroup);
