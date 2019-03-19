@@ -6,7 +6,7 @@ public class SocServ extends Thread {
     private Socket clientSocket;
     private PrintWriter responce;
     private BufferedReader inBuffedReader;
-    
+    private String informationString;
     private DatagramSocket socket;
     private byte[] buf = new byte[256];
     
@@ -17,6 +17,7 @@ public class SocServ extends Thread {
         }
         catch(IOException ex)
         {
+            System.out.println("Socket not created. Check Error");
         }
     }
     public void run(){       
@@ -31,7 +32,9 @@ public class SocServ extends Thread {
                 int port = packet.getPort();
                 packet = new DatagramPacket(buf, buf.length, address, port);
                 String received = new String(packet.getData(), 0, packet.getLength());
+                informationString = received;
                 System.out.println("client sent: " + received);
+
                 if (received.equals("end")) 
                 {
                     System.out.println("client trying to end server");
@@ -42,7 +45,13 @@ public class SocServ extends Thread {
         }
         catch(IOException ex)
         {
+            System.out.println("Datagram Socket not created");
         }
         System.out.println("socketServer exiting Run");
     }
+    public String getString()
+    {
+        return informationString;
+    }
 }
+

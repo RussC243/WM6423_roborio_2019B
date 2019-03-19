@@ -59,9 +59,11 @@ public class HardwareMap {
   public  final int axisRightX_NOT_USED = axisRightX; 
   private final int axisRightY          = 5; 
   public  final int axisTankDriveRight  = axisRightY;
-  
-  public final int buttonHatchPush              = 77777;//TODO: map these place holders
-  public final int buttonHatchPull              = 77777;
+  public  final int buttonBack = 7;
+  public  final int buttonHatchPush              = buttonBack;//TODO: map these place holders\
+  public  final int buttonStart = 8;
+  public final int buttonHatchPull = buttonStart;
+
   public final int buttonDropWheelsDriveForward = 77777;
   public final int buttonDropWheelsDriveReverse = 77777;
   

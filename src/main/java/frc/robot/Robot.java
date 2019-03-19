@@ -168,9 +168,7 @@ public class Robot extends TimedRobot {
       air.rearExtend();
     }
     
-    /*TODO: Find unused buttons on controller for the hatch and drop wheels
-       add them to the hardware map then un-comment this code.
-    //---- Control the hatch pistons. ------------------
+   
     if(joy.getRawButton(hMap.buttonHatchPull))
     {
       air.hatchRetract();
@@ -179,6 +177,8 @@ public class Robot extends TimedRobot {
     {
       air.hatchExtend();
     }
+     /*TODO: Find unused buttons on controller for the hatch and drop wheels
+       add them to the hardware map then un-comment this code.
     //---- Control the drop wheels. ------------------
     if(joy.getRawButton(hMap.buttonDropWheelsDriveForward))
     {
