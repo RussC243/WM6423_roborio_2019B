@@ -129,26 +129,20 @@ public class Robot extends TimedRobot {
     {
       intake.driveMotorIn(0.7);
     }
-    //else Inclusion of else statement might mess up code logic. 
-    //{
-else{
-    if(joy.getRawAxis(hMap.axisTriggerIntakeOut) > 0.1)
+    else //TODO: what was Joshua's concern with this ?
+    {
+      if(joy.getRawAxis(hMap.axisTriggerIntakeOut) > 0.1)
       {
         intake.driveMotorIn(-0.7);
       }
-
-    else
+      else
       {
         intake.driveMotorIn(0);
       }
     }
-    //}
-    System.out.println("Axis Trigger Intake value:" + joy.getRawAxis(hMap.axisTriggerIntakeIn) );
-    System.out.println("Axis Trigger Intake value:" + joy.getRawAxis(hMap.axisTriggerIntakeOut) );
-
+    //System.out.println("Axis Trigger Intake value:" + joy.getRawAxis(hMap.axisTriggerIntakeIn) );
+    //System.out.println("Axis Trigger Intake value:" + joy.getRawAxis(hMap.axisTriggerIntakeOut) );
   }
- 
-
   public void linkJoyStickToDrive()
   {
     dTrain.drive(joy.getRawAxis(hMap.axisTankDriveLeft),joy.getRawAxis(hMap.axisTankDriveRight)); //left and right veritcal axis

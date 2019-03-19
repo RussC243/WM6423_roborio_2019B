@@ -38,13 +38,16 @@ public class ArmWrist {
   //We will ignore affects of the various wrist positions affecting the torque on the arm joint.
   //Once the angle of the arm is known and the relative to the arm is known, we can determine the angle of the wrist
   //  relative to gravity.
+  //TODO: The next 14 constants are place holders. 
+  //They need to be determined once the PIDs, feed foreward and mechanics are working
+  //They will need to be determined again for the bag bot.
   final double ARM_ANGLE_FULL_UP    = 50; //@@@ degrees up from straight out  - measure with inclinometer
   final double ARM_ANGLE_FULL_DOWN  = 40; //@@@ degrees down from straight out
   final double ARM_NEEDED_COMPENSATION_STRAIGHT_OUT = 0.0;  //@@@ measure by looking at print of PID out value with no compensation
   final double WRIST_ANGLE_FULL_UP  = 90; //@@@ degrees up relative to arm    
   final double WRIST_ANGLE_FULL_DOWN= 40; //@@@ degrees down relative to arm  
   final double WRIST_NEEDED_COMPENSATION_STRAIGHT_OUT = 0.0;//@@@ measure by looking at print of PID out value with no compensation
-  //------- poses (There are only a hadfull so an array would add more complication than the benifit.) --------
+  //------- poses (There are only a handfull so an array would add more complication than the benifit.) --------
   final double ARM_POSE_0       = -300; //pick up ball from ground
   final double WRIST_ARM_POSE_0 =  200;
   final double ARM_POSE_1       = -250; //hatch level 1
@@ -52,7 +55,7 @@ public class ArmWrist {
   final double ARM_POSE_2       = -200; //hatch level 2
   final double WRIST_ARM_POSE_2 =    0;
   final double ARM_POSE_3       = -150;//hatch level 3
-  final double WRIST_ARM_POSE_3 = -100; //Default: 100. 
+  final double WRIST_ARM_POSE_3 = -100;  
   private int poseSelection             = 1;    //initial pose
   final private int POSE_HIGHEST_DEFINED= 3;    //poses 0 to 3 are defined so far
 
