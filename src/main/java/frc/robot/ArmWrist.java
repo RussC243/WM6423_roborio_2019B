@@ -40,11 +40,13 @@ public class ArmWrist {
   //  relative to gravity.
   final double ARM_ANGLE_FULL_UP    = 50; //@@@ degrees up from straight out  - measure with inclinometer
   final double ARM_ANGLE_FULL_DOWN  = 40; //@@@ degrees down from straight out
+  //chnage here to re-enable arm
   final double ARM_NEEDED_COMPENSATION_STRAIGHT_OUT = 0.0;  //@@@ measure by looking at print of PID out value with no compensation
   final double WRIST_ANGLE_FULL_UP  = 90; //@@@ degrees up relative to arm    
   final double WRIST_ANGLE_FULL_DOWN= 40; //@@@ degrees down relative to arm  
+  // change here to re-enable wrist
   final double WRIST_NEEDED_COMPENSATION_STRAIGHT_OUT = 0.0;//@@@ measure by looking at print of PID out value with no compensation
-  //------- poses (There are only a hadfull so an array would add more complication than the benifit.) --------
+  //------- poses (There are only a handfull so an array would add more complication than the benifit.) --------
   final double ARM_POSE_0       = -300; //pick up ball from ground
   final double WRIST_ARM_POSE_0 =  200;
   final double ARM_POSE_1       = -250; //hatch level 1
