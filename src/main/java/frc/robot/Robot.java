@@ -127,19 +127,25 @@ public class Robot extends TimedRobot {
   {
     if(joy.getRawAxis(hMap.axisTriggerIntakeIn) > 0.1)
     {
-      intake.driveMotorIn(1);
+      intake.driveMotorIn(0.7);
     }
-    else
-    {
-      if(joy.getRawAxis(hMap.axisTriggerIntakeOut) > 0.1)
+    //else Inclusion of else statement might mess up code logic. 
+    //{
+else{
+    if(joy.getRawAxis(hMap.axisTriggerIntakeOut) > 0.1)
       {
-        intake.driveMotorIn(-1);
+        intake.driveMotorIn(-0.7);
       }
-      else
+
+    else
       {
         intake.driveMotorIn(0);
       }
     }
+    //}
+    System.out.println("Axis Trigger Intake value:" + joy.getRawAxis(hMap.axisTriggerIntakeIn) );
+    System.out.println("Axis Trigger Intake value:" + joy.getRawAxis(hMap.axisTriggerIntakeOut) );
+
   }
  
 

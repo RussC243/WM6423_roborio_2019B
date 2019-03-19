@@ -30,7 +30,7 @@ public class DriveTrain
   WPI_VictorSPX   driveRightFront_bag;
   WPI_VictorSPX   driveRightRear_bag;
   // 2nd Bot  
-  VictorSP      driveLeftFront_2nd; //this one speed controller is PWM 
+  VictorSP      driveLeftFront_2nd; //this one speed controller is PWM. Code works for drivetrain. 
   WPI_TalonSRX	driveLeftRear_2nd;   
   WPI_TalonSRX	driveRightFront_2nd;
   WPI_TalonSRX	driveRightRear_2nd; 
