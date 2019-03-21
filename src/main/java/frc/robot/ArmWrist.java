@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.*;
 public class ArmWrist {
   //at 20mS per update, changing target from zero to full up or full down would take 1000*0.020 = 20 sec
   //So to speed the motion we will change target by the factor every 20mS.
-  final int FAST_MOTION_FACTOR  = 20;     //20 sec divided by 10 = 2 sec for full travel up or down from center position
+  final int FAST_MOTION_FACTOR  = 5;     //20 sec divided by 10 = 2 sec for full travel up or down from center position
   //define the range of digital counts of the pots
   final double ARM_DIGITAL_RANGE   = 1000.0; //range is -1000 to +1000
   final double WRIST_DIGITAL_RANGE = 1000.0;
@@ -28,8 +28,8 @@ public class ArmWrist {
   final double ARM_SAFETY_DOWN       = -1.1;  //@@@ - below this is considered a severed pot wire
   final double ARM_SAFETY_UP         =  1.1;  //@@@ - above this is considered a severed pot wire
 
-  final double WRIST_POT_FULL_UP     =  200;  //@@@ 
-  final double WRIST_POT_FULL_DOWN   = -200;  //@@@ 
+  final double WRIST_POT_FULL_UP     =  400;  //@@@ 
+  final double WRIST_POT_FULL_DOWN   = -300;  //@@@ 
   final double WRIST_POT_STRAIGHT_OUT=   -0;  //@@@ 
   final double WRIST_SAFETY_DOWN     = -1.1;  //@@@ - below this is considered a severed pot wire
   final double WRIST_SAFETY_UP       =  1.1;  //@@@ - above this is considered a severed pot wire
@@ -46,7 +46,7 @@ public class ArmWrist {
   final double ARM_NEEDED_COMPENSATION_STRAIGHT_OUT = 0.0;  //@@@ measure by looking at print of PID out value with no compensation
   final double WRIST_ANGLE_FULL_UP  = 90; //@@@ degrees up relative to arm    
   final double WRIST_ANGLE_FULL_DOWN= 40; //@@@ degrees down relative to arm  
-  final double WRIST_NEEDED_COMPENSATION_STRAIGHT_OUT = 0.0;//@@@ measure by looking at print of PID out value with no compensation
+  final double WRIST_NEEDED_COMPENSATION_STRAIGHT_OUT = 0.24;//@@@ measure by looking at print of PID out value with no compensation
   //------- poses (There are only a handfull so an array would add more complication than the benifit.) --------
   final double ARM_POSE_0       = -300; //pick up ball from ground
   final double WRIST_ARM_POSE_0 =  200;
@@ -150,8 +150,14 @@ public class ArmWrist {
         break;
     }
   }
-  public void upDownManual(boolean up, boolean down)
+
+  public void upDownManualArmWrist(boolean up, boolean down)
   {
+    upDownManualArm(up, down);
+    upDownManualWrist(up, down);
+  }
+  public void upDownManualArm(boolean up, boolean down)
+  { 
     //This function only sets the target values. The processPIDs below drives the motors
     //---- process the arm ------------------
     if(up && armPositionTarget < ARM_POT_FULL_UP)
@@ -165,19 +171,28 @@ public class ArmWrist {
          armPositionTarget -= FAST_MOTION_FACTOR;
       }
     }
-    //---- process the wrist ------------------
+  }
+
+  public void upDownManualWrist(boolean up, boolean down)
+  { 
+    //System.out.println("in manual wrist method " + up + " " + down + " " + wristPositionTarget);
+    //This function only sets the target values. The processPIDs below drives the motors
+    //---- process the wrist ------------------ 
     if(up && wristPositionTarget < WRIST_POT_FULL_UP)
     {
       wristPositionTarget += FAST_MOTION_FACTOR;
+      //System.out.println("wrist target up " + wristPositionTarget);
     }
     else
     {
       if(down && wristPositionTarget > WRIST_POT_FULL_DOWN)
       {
         wristPositionTarget -= FAST_MOTION_FACTOR;
+        //System.out.println("wrist target down "  + wristPositionTarget);
       }
     }
   }
+
 
   public void upDownCycle(boolean up, boolean down)
   {
@@ -192,6 +207,12 @@ public class ArmWrist {
       {
          poseSelection--;
       }
+    }
+    
+    //if no button press, return before changing targets so manual function can work.
+    if(up == false && down == false)
+    {
+      return;
     }
     //strike a pose, come on vogue
     switch (poseSelection)
@@ -222,14 +243,12 @@ public class ArmWrist {
   {
     //----- Read the pots, cycle the PIDs and store the PID outputs  -----------------------------------------------------
     armPositionCurrent   = potArm.get()/ARM_DIGITAL_RANGE - 1.0;  //map [0 to 2.0] to [-1.0 to 1.0]
-    wristPositionCurrent = -(potWrist.get()/WRIST_DIGITAL_RANGE - 1.0); //TODO: why negative?
+    wristPositionCurrent = potWrist.get()/WRIST_DIGITAL_RANGE - 1.0; 
     //For each PID cycle, pass in the current and target positions. 
     //The needed drive to eliminate error is returned from the PID.
     //Simple as that :)
-    //sensor target
-    double pidOutputArm   = -pidArm.getOutput(armPositionCurrent, armPositionTarget/ARM_DIGITAL_RANGE); //output range is -1000 to +1000
-    //TODO: why negative?
-    double pidOutputWrist = -pidWrist.getOutput(wristPositionCurrent, wristPositionTarget/WRIST_DIGITAL_RANGE);
+    double pidOutputArm   = pidArm.getOutput(armPositionCurrent, armPositionTarget/ARM_DIGITAL_RANGE); //output range is -1000 to +1000
+    double pidOutputWrist = pidWrist.getOutput(wristPositionCurrent, wristPositionTarget/WRIST_DIGITAL_RANGE);
     //The variable torque caused by the weight of the arm and wrist makes for bad PID behavior so we need to add
     // a feed forward term which is an offset that is dependant of the angles of the joint.
     // 1st determine the joint angles 
@@ -258,7 +277,7 @@ public class ArmWrist {
     //----- Print the results ---------------------------------------------------------------------------------------------
     if(printCounter%10 == 0)//print every 20*10 = 200mS
     {
-      System.out.printf("C:T:P:A:F %.2f : %.2f : %.3f %.2f %.3f :  %.2f : %.2f : %.3f %.2f %.3f\n", 
+      System.out.printf("C:T:P:A:F Arm %.2f : %.0f : %.3f : %.2f : %.3f  Wrist %.2f : %.0f : %.3f : %.2f : %.3f\n", 
                                               armPositionCurrent,
                                               armPositionTarget,
                                               pidOutputArm,
@@ -283,8 +302,8 @@ public class ArmWrist {
         break;
       case WM2019_BAG:
       case WM2019_2ND:
-        setArmWithSafetyCheck(pidOutputArm, armPositionCurrent);
-        setWristWithSafetyCheck(pidOutputWrist, wristPositionCurrent);//TODO add feedForwardArm term after it is printing correctly
+        setArmWithSafetyCheck  (pidOutputArm   + feedForwardArm,   armPositionCurrent);
+        setWristWithSafetyCheck(pidOutputWrist + feedForwardWrist, wristPositionCurrent);
         break;
     }
   }
@@ -294,7 +313,9 @@ public class ArmWrist {
   {
     if(potValueSafetyCheckValue < ARM_SAFETY_UP && potValueSafetyCheckValue > ARM_SAFETY_DOWN)
     {
-     //zzz armGroup.set(driveValue);
+      driveValue = 0;//zzz wait until the wrist is working so the bot does not tip backwards again when arm us up
+      armGroup.set(driveValue); 
+      //System.out.printf("final arm drive is %.2f\n", driveValue);
     }
     else
     {
@@ -308,8 +329,8 @@ public class ArmWrist {
   {
     if(potValueSafetyCheckValue < WRIST_SAFETY_UP && potValueSafetyCheckValue > WRIST_SAFETY_DOWN)
     {
-      //System.out.printf("direct wrist %.2f\n", -driveValue);
-      wrist.set(-driveValue);
+     // System.out.printf("final wrist drive is %.2f\n", driveValue);
+      wrist.set(driveValue);
     }
     else
     {

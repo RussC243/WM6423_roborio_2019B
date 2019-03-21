@@ -16,7 +16,7 @@ public class Robot extends TimedRobot {
   {
     PEANUT, WM2019_BAG, WM2019_2ND //The peanut is Russ' test bot. The bag bot is the one in the bag. The 2nd is the spare bot
   }
-  final OurBots selectedBot = OurBots.WM2019_2ND; //set the bot to the one you are working with
+  final OurBots selectedBot = OurBots.PEANUT; //set the bot to the one you are working with
 
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
@@ -94,8 +94,8 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     System.out.printf("teleopInit\n"); 
-    armWrist.armPositionTarget = armWrist.ARM_ANGLE_FULL_DOWN;//starting position 
-    armWrist.wristPositionTarget = armWrist.ARM_ANGLE_FULL_UP; 
+    armWrist.armPositionTarget = armWrist.ARM_POT_FULL_DOWN;//starting position 
+    armWrist.wristPositionTarget = armWrist.ARM_POT_FULL_UP; 
   }
 
   /**
@@ -129,7 +129,7 @@ public class Robot extends TimedRobot {
     {
       intake.driveMotorIn(0.7);
     }
-    else //TODO: what was Joshua's concern with this ?
+    else
     {
       if(joy.getRawAxis(hMap.axisTriggerIntakeOut) > 0.1)
       {
@@ -140,8 +140,6 @@ public class Robot extends TimedRobot {
         intake.driveMotorIn(0);
       }
     }
-    //System.out.println("Axis Trigger Intake value:" + joy.getRawAxis(hMap.axisTriggerIntakeIn) );
-    //System.out.println("Axis Trigger Intake value:" + joy.getRawAxis(hMap.axisTriggerIntakeOut) );
   }
   public void linkJoyStickToDrive()
   {
@@ -149,49 +147,20 @@ public class Robot extends TimedRobot {
   }
   public void linkJoyStickToArmWrist()
   {
-    armWrist.upDownManual(joy.getRawButton(hMap.buttonArmManualUp), joy.getRawButton(hMap.buttonArmManualDown));
-    armWrist.upDownCycle( joy.getRawButton(hMap.buttonArmCycleUp), joy.getRawButton(hMap.buttonArmCycleDown)); 
-    //armWrist.upDownWristOnly(joy.getPOV());
-  
+    armWrist.upDownManualArm  (joy.getRawButton(hMap.buttonArmWristManualUp), joy.getRawButton(hMap.buttonArmWristManualDown));
+    armWrist.upDownManualWrist(joy.getRawButton(hMap.buttonWristManualUp),    joy.getRawButton(hMap.buttonWristManualDown));
+    armWrist.upDownCycle      (joy.getRawButton(hMap.buttonArmWristCycleUp),  joy.getRawButton(hMap.buttonArmWristCycleDown)); 
   }
   public void linkJoyStickToPneumatics()
   {
-    //---- Control the climb pistons. ------------------
-    if(joy.getRawButton(hMap.buttonClimbDown))
-    {
-      air.frontRetract();
-      air.rearRetract();
-    }
-    if(joy.getRawButton(hMap.buttonClimbUp))
-    {
-      air.frontExtend();
-      air.rearExtend();
-    }
-    
-    /*TODO: Find unused buttons on controller for the hatch and drop wheels
-       add them to the hardware map then un-comment this code.
     //---- Control the hatch pistons. ------------------
-    if(joy.getRawButton(hMap.buttonHatchPull))
+    if(joy.getPOV() == (hMap.povHatchPush))
     {
-      air.hatchRetract();
+      air.hatchPush();
     }
-    if(joy.getRawButton(hMap.buttonHatchPush))
+    if(joy.getPOV() == (hMap.povHatchPull))
     {
-      air.hatchExtend();
-    }
-    //---- Control the drop wheels. ------------------
-    if(joy.getRawButton(hMap.buttonDropWheelsDriveForward))
-    {
-      air.driveDropWheels(1.0);
-    }
-    else if(joy.getRawButton(hMap.buttonDropWheelsDriveReverse))
-    {
-      air.driveDropWheels(-1.0);
-    }
-    else
-    {
-      air.driveDropWheels(0);
-    }
-    */ 
+      air.hatchPull();
+    } 
   }
 }
