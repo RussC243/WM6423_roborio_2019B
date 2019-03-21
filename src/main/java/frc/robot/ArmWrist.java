@@ -3,6 +3,7 @@ package frc.robot;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import edu.wpi.first.wpilibj.Spark;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot.OurBots;
 import edu.wpi.first.wpilibj.*;
 
@@ -22,14 +23,14 @@ public class ArmWrist {
   //*************************************************************************************************************************
   //----- target limits so we dont over rotate ---------------------------
   //These are in units of analog to digital counts returned from the pot sensor
-  final double ARM_POT_FULL_UP       = -100;  //@@@ - record from print output
-  final double ARM_POT_FULL_DOWN     = -650;  //@@@ 
-  final double ARM_POT_STRAIGHT_OUT  = -200;  //@@@ 
+  final double ARM_POT_FULL_UP       = 100;  //@@@ - record from print output
+  final double ARM_POT_FULL_DOWN     = -800;  //@@@ 
+  final double ARM_POT_STRAIGHT_OUT  = 0;  //@@@ 
   final double ARM_SAFETY_DOWN       = -1.1;  //@@@ - below this is considered a severed pot wire
   final double ARM_SAFETY_UP         =  1.1;  //@@@ - above this is considered a severed pot wire
 
-  final double WRIST_POT_FULL_UP     =  400;  //@@@ 
-  final double WRIST_POT_FULL_DOWN   = -300;  //@@@ 
+  final double WRIST_POT_FULL_UP     =  800;  //@@@ 
+  final double WRIST_POT_FULL_DOWN   = -900;  //@@@ 
   final double WRIST_POT_STRAIGHT_OUT=   -0;  //@@@ 
   final double WRIST_SAFETY_DOWN     = -1.1;  //@@@ - below this is considered a severed pot wire
   final double WRIST_SAFETY_UP       =  1.1;  //@@@ - above this is considered a severed pot wire
@@ -46,7 +47,7 @@ public class ArmWrist {
   final double ARM_NEEDED_COMPENSATION_STRAIGHT_OUT = 0.0;  //@@@ measure by looking at print of PID out value with no compensation
   final double WRIST_ANGLE_FULL_UP  = 90; //@@@ degrees up relative to arm    
   final double WRIST_ANGLE_FULL_DOWN= 40; //@@@ degrees down relative to arm  
-  final double WRIST_NEEDED_COMPENSATION_STRAIGHT_OUT = 0.24;//@@@ measure by looking at print of PID out value with no compensation
+  final double WRIST_NEEDED_COMPENSATION_STRAIGHT_OUT = 0.0;//@@@ measure by looking at print of PID out value with no compensation
   //------- poses (There are only a handfull so an array would add more complication than the benifit.) --------
   final double ARM_POSE_0       = -300; //pick up ball from ground
   final double WRIST_ARM_POSE_0 =  200;
@@ -94,7 +95,7 @@ public class ArmWrist {
   final double I_ARM = 0.005;
   final double D_ARM = 0.0;
   MiniPID pidWrist;
-  final double P_WRIST = 0.8;
+  final double P_WRIST = 3;
   final double I_WRIST = 0.0;
   final double D_WRIST = 0.0;
   
@@ -241,9 +242,10 @@ public class ArmWrist {
   
   public void processPIDsAndDriveMotors()
   {
+    //SmartDashboard.putData();
     //----- Read the pots, cycle the PIDs and store the PID outputs  -----------------------------------------------------
     armPositionCurrent   = potArm.get()/ARM_DIGITAL_RANGE - 1.0;  //map [0 to 2.0] to [-1.0 to 1.0]
-    wristPositionCurrent = potWrist.get()/WRIST_DIGITAL_RANGE - 1.0; 
+    wristPositionCurrent = -1*potWrist.get()/WRIST_DIGITAL_RANGE + 1.0; 
     //For each PID cycle, pass in the current and target positions. 
     //The needed drive to eliminate error is returned from the PID.
     //Simple as that :)
@@ -327,10 +329,11 @@ public class ArmWrist {
   /** This method checks to makes sure the arm pot sensor wire is not broken then drives the motors */
   private void setWristWithSafetyCheck(double driveValue, double potValueSafetyCheckValue)
   {
-    if(potValueSafetyCheckValue < WRIST_SAFETY_UP && potValueSafetyCheckValue > WRIST_SAFETY_DOWN)
+    
+    if(potValueSafetyCheckValue > -1*WRIST_SAFETY_UP && potValueSafetyCheckValue < -1*WRIST_SAFETY_DOWN)
     {
      // System.out.printf("final wrist drive is %.2f\n", driveValue);
-      wrist.set(driveValue);
+      wrist.set(-1*driveValue);
     }
     else
     {
