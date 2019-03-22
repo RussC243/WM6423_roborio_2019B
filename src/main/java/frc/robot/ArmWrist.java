@@ -23,9 +23,9 @@ public class ArmWrist {
   //*************************************************************************************************************************
   //----- target limits so we dont over rotate ---------------------------
   //These are in units of analog to digital counts returned from the pot sensor
-  final double ARM_POT_FULL_UP       = 100;  //@@@ - record from print output
+  final double ARM_POT_FULL_UP       = 100;   //@@@ - record from print output
   final double ARM_POT_FULL_DOWN     = -800;  //@@@ 
-  final double ARM_POT_STRAIGHT_OUT  = 0;  //@@@ 
+  final double ARM_POT_STRAIGHT_OUT  = 0;     //@@@ 
   final double ARM_SAFETY_DOWN       = -1.1;  //@@@ - below this is considered a severed pot wire
   final double ARM_SAFETY_UP         =  1.1;  //@@@ - above this is considered a severed pot wire
 
@@ -35,19 +35,40 @@ public class ArmWrist {
   final double WRIST_SAFETY_DOWN     = -1.1;  //@@@ - below this is considered a severed pot wire
   final double WRIST_SAFETY_UP       =  1.1;  //@@@ - above this is considered a severed pot wire
 
-  //------- values needed to calculated the PID feed forward value to compensate for torque caused by the weight of the arm 
-  //We will ignore affects of the various wrist positions affecting the torque on the arm joint.
-  //Once the angle of the arm is known and the relative to the arm is known, we can determine the angle of the wrist
-  //  relative to gravity.
-  //TODO: The next 14 constants are place holders. 
-  //They need to be determined once the PIDs, feed foreward and mechanics are working
-  //They will need to be determined again for the bag bot.
+  /*------- values needed to calculated the PID feed forward value to compensate for torque caused by the weight of the arm 
+  We will ignore affects of the various wrist positions affecting the torque on the arm joint.
+  Once the angle of the arm is known and the relative to the arm is known, we can determine the angle of the wrist
+    relative to gravity.
+  The following link discusses everything that was implemented in our code
+   Ignore the inertia stuff in the link... You will need to understand the A cos theta stuff.
+   The A value to overcome gravity will be determined empirically (try values until one work well) not calculated 
+   https://www.chiefdelphi.com/t/velocity-limiting-pid/164908
+   The drive needed to overcome the gravity actually consists of two parts
+   1st part: the minimum drive just to get the motor to move with no gravity
+   2nd part: the additional drive needed to overcome gravity  
+   So... As a refinement to what was dicussed in the link, the following was implemented
+   1. Determine drive value M that is 20% under value that just MOVES the motor with the chain removed.  
+        Take 80% of the value where the motor just starts to overcome its own friction.
+        The reason we take only 80% rather than 100% is to prevent oscillations when the PID out is near zero.
+        This should be more clear after understanding the complete feed foreward solution.
+   2. Determine the COMBINED drive value, C that overcomes gravity with arm straigt out at 0 degrees
+   3. The value for A in the A cos (theta) term is calcualted by the following equation. 
+        C = A + M
+        A = C - M    (solved for A)
+   4. The final drive F is
+        when PidOut is positive to raise arm: F = PidOut + M + A cos(theta) 
+        when PidOut is negative to lower arm: F = PidOut - M + A cos(theta) 
+   Note: M and A cos(theta) are feed forward terms in PID lingo.     
+   */
   final double ARM_ANGLE_FULL_UP    = 50; //@@@ degrees up from straight out  - measure with inclinometer
   final double ARM_ANGLE_FULL_DOWN  = 40; //@@@ degrees down from straight out
-  final double ARM_NEEDED_COMPENSATION_STRAIGHT_OUT = 0.0;  //@@@ measure by looking at print of PID out value with no compensation
+  final double ARM_DRIVE_M          = 0.0;//@@@ see comments above how to determine
+  final double ARM_DRIVE_C          = 0.0;//@@@ see comments above how to determine
   final double WRIST_ANGLE_FULL_UP  = 90; //@@@ degrees up relative to arm    
   final double WRIST_ANGLE_FULL_DOWN= 40; //@@@ degrees down relative to arm  
-  final double WRIST_NEEDED_COMPENSATION_STRAIGHT_OUT = 0.0;//@@@ measure by looking at print of PID out value with no compensation
+  final double WRIST_DRIVE_M        = 0.0;//@@@ see comments above how to determine
+  final double WRIST_DRIVE_C        = 0.0;//@@@ see comments above how to determine
+  
   //------- poses (There are only a handfull so an array would add more complication than the benifit.) --------
   final double ARM_POSE_0       = -300; //pick up ball from ground
   final double WRIST_ARM_POSE_0 =  200;
@@ -273,9 +294,13 @@ public class ArmWrist {
     //       Consider the arm straight out at zero degrees: That would be full torque.
     //       Then consider the arm straight up at 90 degrees: That would be zero torque.
     //       This a cos function.     
-    double feedForwardArm   = ARM_NEEDED_COMPENSATION_STRAIGHT_OUT * Math.cos(Math.toRadians(armAngle));
-    double feedForwardWrist = WRIST_NEEDED_COMPENSATION_STRAIGHT_OUT * Math.cos(Math.toRadians(wristAngleRealtiveToGravity));
-
+    
+    //C = A + M    See comments is top of this file to understand feed forward terms 
+    //A = C - M    (solved for A)
+    double arm_A   = ARM_DRIVE_C - ARM_DRIVE_M; 
+    double armACosTheta = arm_A * Math.cos(Math.toRadians(armAngle));
+    double wrist_A = WRIST_DRIVE_C - WRIST_DRIVE_M; 
+    double wristACosTheta = wrist_A * Math.cos(Math.toRadians(wristAngleRealtiveToGravity));
     //----- Print the results ---------------------------------------------------------------------------------------------
     if(printCounter%10 == 0)//print every 20*10 = 200mS
     {
@@ -284,12 +309,12 @@ public class ArmWrist {
                                               armPositionTarget,
                                               pidOutputArm,
                                               armAngle,
-                                              feedForwardArm,  
+                                              armACosTheta,  
                                               wristPositionCurrent,
                                               wristPositionTarget,
                                               pidOutputWrist,
                                               wristAngle,
-                                              feedForwardWrist);
+                                              wristACosTheta);
     }
     printCounter++;
    
@@ -304,8 +329,32 @@ public class ArmWrist {
         break;
       case WM2019_BAG:
       case WM2019_2ND:
-        setArmWithSafetyCheck  (pidOutputArm   + feedForwardArm,   armPositionCurrent);
-        setWristWithSafetyCheck(pidOutputWrist + feedForwardWrist, wristPositionCurrent);
+        //See comments is top of this file to understand feed forward terms
+        //When PidOut is positive to raise arm: F = PidOut + M + A cos(theta) 
+        //When PidOut is negative to lower arm: F = PidOut - M + A cos(theta) 
+        //---- determine final drive F for the arm ---------------------------
+        double armFinalDrive = 0; 
+        if(pidOutputArm > 0)
+        {
+          armFinalDrive = pidOutputArm + ARM_DRIVE_M + armACosTheta;
+        }
+        else
+        {
+          armFinalDrive = pidOutputArm - ARM_DRIVE_M + armACosTheta;
+        }
+        //---- again for the wrist ----
+        double wristFinalDrive = 0; 
+        if(pidOutputWrist > 0)
+        {
+          wristFinalDrive = pidOutputWrist + WRIST_DRIVE_M + wristACosTheta;
+        }
+        else
+        {
+          wristFinalDrive = pidOutputWrist - WRIST_DRIVE_M + wristACosTheta;
+        }
+      
+        setArmWithSafetyCheck  (armFinalDrive,   armPositionCurrent);
+        setWristWithSafetyCheck(wristFinalDrive, wristPositionCurrent);
         break;
     }
   }
