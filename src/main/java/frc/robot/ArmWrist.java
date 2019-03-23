@@ -23,15 +23,17 @@ public class ArmWrist {
   //*************************************************************************************************************************
   //----- target limits so we dont over rotate ---------------------------
   //These are in units of analog to digital counts returned from the pot sensor
-  final double ARM_POT_FULL_UP       = 100;   //@@@ - record from print output
-  final double ARM_POT_FULL_DOWN     = -800;  //@@@ 
-  final double ARM_POT_STRAIGHT_OUT  = 0;     //@@@ 
+  final double ARM_POT_FULL_UP       = -300;  //@@@ - record from print output
+  final double ARM_POT_FULL_DOWN     = -900;  //@@@ 
+  final double ARM_POT_STRAIGHT_OUT  = -400;  //@@@ 
+  final double ARM_POT_INITIAL       = ARM_POT_FULL_DOWN;     //@@@
   final double ARM_SAFETY_DOWN       = -1.1;  //@@@ - below this is considered a severed pot wire
   final double ARM_SAFETY_UP         =  1.1;  //@@@ - above this is considered a severed pot wire
 
-  final double WRIST_POT_FULL_UP     =  800;  //@@@ 
+  final double WRIST_POT_FULL_UP     =  950;    //@@@ 
   final double WRIST_POT_FULL_DOWN   = -900;  //@@@ 
-  final double WRIST_POT_STRAIGHT_OUT=   -0;  //@@@ 
+  final double WRIST_POT_STRAIGHT_OUT=   -200; //@@@
+  final double WRIST_POT_INITIAL     =  WRIST_POT_FULL_UP; //@@@
   final double WRIST_SAFETY_DOWN     = -1.1;  //@@@ - below this is considered a severed pot wire
   final double WRIST_SAFETY_UP       =  1.1;  //@@@ - above this is considered a severed pot wire
 
@@ -62,12 +64,12 @@ public class ArmWrist {
    */
   final double ARM_ANGLE_FULL_UP    = 50; //@@@ degrees up from straight out  - measure with inclinometer
   final double ARM_ANGLE_FULL_DOWN  = 40; //@@@ degrees down from straight out
-  final double ARM_DRIVE_M          = 0.0;//@@@ see comments above how to determine
-  final double ARM_DRIVE_C          = 0.0;//@@@ see comments above how to determine
+  final double ARM_DRIVE_M          = 0.1;//@@@ see comments above how to determine
+  final double ARM_DRIVE_C          = 0.3;//@@@ see comments above how to determine
   final double WRIST_ANGLE_FULL_UP  = 90; //@@@ degrees up relative to arm    
-  final double WRIST_ANGLE_FULL_DOWN= 40; //@@@ degrees down relative to arm  
-  final double WRIST_DRIVE_M        = 0.0;//@@@ see comments above how to determine
-  final double WRIST_DRIVE_C        = 0.0;//@@@ see comments above how to determine
+  final double WRIST_ANGLE_FULL_DOWN= 75; //@@@ degrees down relative to arm  
+  final double WRIST_DRIVE_M        = 0.1;//@@@ see comments above how to determine
+  final double WRIST_DRIVE_C        = 0.3;//@@@ see comments above how to determine
   
   //------- poses (There are only a handfull so an array would add more complication than the benifit.) --------
   final double ARM_POSE_0       = -300; //pick up ball from ground
@@ -113,10 +115,10 @@ public class ArmWrist {
     
   MiniPID pidArm;
   final double P_ARM = 0.99;
-  final double I_ARM = 0.005;
+  final double I_ARM = 0.001;
   final double D_ARM = 0.0;
   MiniPID pidWrist;
-  final double P_WRIST = 3;
+  final double P_WRIST = 1;
   final double I_WRIST = 0.0;
   final double D_WRIST = 0.0;
   
@@ -130,8 +132,6 @@ public class ArmWrist {
     //arm PID
     pidArm = new MiniPID(P_ARM,I_ARM,D_ARM);
     pidArm.setSetpoint(0.0);            //center of travel
-    //pidArm.setSetpointRange(ARM_FULL);  //MiniPID class sets range to +/- the value set here 
-    //pidArm.setOutputLimits(ARM_DOWN_LIMIT,ARM_UP_LIMIT);
     pidArm.setDirection(true); //true is reversed
     pidArm.reset();            //remove any I term build up from last time we used the PID
     
@@ -334,13 +334,13 @@ public class ArmWrist {
         //When PidOut is negative to lower arm: F = PidOut - M + A cos(theta) 
         //---- determine final drive F for the arm ---------------------------
         double armFinalDrive = 0; 
-        if(pidOutputArm > 0)
+        if(pidOutputArm > 0) 
         {
-          armFinalDrive = pidOutputArm + ARM_DRIVE_M + armACosTheta;
+          armFinalDrive = pidOutputArm; //TODO + ARM_DRIVE_M + armACosTheta;
         }
         else
         {
-          armFinalDrive = pidOutputArm - ARM_DRIVE_M + armACosTheta;
+          armFinalDrive = pidOutputArm;// - ARM_DRIVE_M + armACosTheta;
         }
         //---- again for the wrist ----
         double wristFinalDrive = 0; 
@@ -364,8 +364,7 @@ public class ArmWrist {
   {
     if(potValueSafetyCheckValue < ARM_SAFETY_UP && potValueSafetyCheckValue > ARM_SAFETY_DOWN)
     {
-      driveValue = 0;//zzz wait until the wrist is working so the bot does not tip backwards again when arm us up
-      armGroup.set(driveValue); 
+      armGroup.set(-1*driveValue); 
       //System.out.printf("final arm drive is %.2f\n", driveValue);
     }
     else
@@ -379,10 +378,10 @@ public class ArmWrist {
   private void setWristWithSafetyCheck(double driveValue, double potValueSafetyCheckValue)
   {
     
-    if(potValueSafetyCheckValue > -1*WRIST_SAFETY_UP && potValueSafetyCheckValue < -1*WRIST_SAFETY_DOWN)
+    if(potValueSafetyCheckValue > WRIST_SAFETY_DOWN && potValueSafetyCheckValue < WRIST_SAFETY_UP)
     {
      // System.out.printf("final wrist drive is %.2f\n", driveValue);
-      wrist.set(-1*driveValue);
+     wrist.set(-1*driveValue);
     }
     else
     {

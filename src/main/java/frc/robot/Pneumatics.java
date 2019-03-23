@@ -19,9 +19,10 @@ import frc.robot.Robot.OurBots;
 
 public class Pneumatics 
 {
-  private final double PULSE_DURATION = 1.01;   // in seconds. 
+  private final double PULSE_DURATION = 0.1;   // in seconds. 
   private final double MOTOR_CURRENT_LIMIT = 3; // to avoid burning out a stalled motor
-
+  private final double HATCH_RETURN_TIME = 50; //20mS * 50 = 1000mS
+  private double hatchReturnConter = HATCH_RETURN_TIME;
   HardwareMap hMap; 
   OurBots  selectedBots_pnuematics_local; //copy of constructor argument if needed by class methods 
   Solenoid pneumatic_hatch_pull;  //-
@@ -54,15 +55,39 @@ public class Pneumatics
   }//end constructor
     
   //Methods for Solenoid state. Setting them on turn them on while
+  public void hatchPushOff()  
+  {
+    pneumatic_hatch_push.set(false);
+  }
+
+  public void hatchPullOff()  
+  {
+    pneumatic_hatch_pull.set(false);
+  }
+  
   public void hatchPush()  
   {
-      pneumatic_hatch_push.set(true);
-      pneumatic_hatch_pull.set(false);
+    pneumatic_hatch_pull.set(false);  
+    pneumatic_hatch_push.set(true);
+    pneumatic_hatch_push.startPulse();
+    hatchReturnConter = HATCH_RETURN_TIME; //hold value at max
+    System.out.println("hatch push");
   }
   public void hatchPull()  
   {
-      pneumatic_hatch_pull.set(true);
+    if(hatchReturnConter  > 0)
+    {
       pneumatic_hatch_push.set(false);
+      pneumatic_hatch_pull.set(true);
+      pneumatic_hatch_pull.startPulse();
+      System.out.println("hatch Pull");
+      hatchReturnConter--;
+    }
+    else
+    {
+      hatchPullOff();
+      hatchPushOff();
+    }
   }
     
   //place holder method... add 5 more if needed

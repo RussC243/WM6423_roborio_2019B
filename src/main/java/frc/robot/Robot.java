@@ -31,15 +31,17 @@ public class Robot extends TimedRobot {
   ArmWrist        armWrist  = new ArmWrist(selectedBot);
   Pneumatics      air       = new Pneumatics(selectedBot);
   Intake          intake    = new Intake();
+ 
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
    */
   @Override
   public void robotInit() {
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
+    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);//
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
+    CameraServer.getInstance().startAutomaticCapture();
   }
 
   /**
@@ -96,9 +98,9 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     System.out.printf("teleopInit\n"); 
-    armWrist.armPositionTarget = armWrist.ARM_POT_FULL_DOWN;//starting position 
-    armWrist.wristPositionTarget = armWrist.ARM_POT_FULL_UP; 
-    UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
+    armWrist.armPositionTarget = armWrist.ARM_POT_INITIAL;//starting position 
+    armWrist.wristPositionTarget = armWrist.WRIST_POT_INITIAL; 
+    
   }
 
   /**
@@ -159,11 +161,11 @@ public class Robot extends TimedRobot {
     //---- Control the hatch pistons. ------------------
     if(joy.getPOV() == (hMap.povHatchPush))
     {
-      air.hatchPush();
+      air.hatchPush(); //if button pushed, push hatch
     }
-    if(joy.getPOV() == (hMap.povHatchPull))
+    else
     {
-      air.hatchPull();
-    } 
+      air.hatchPull(); //else pull it in for 1 second
+    }
   }
 }
