@@ -12,8 +12,11 @@ import edu.wpi.first.wpilibj.*;
  */
 public class ArmWrist {
   //at 20mS per update, changing target from zero to full up or full down would take 1000*0.020 = 20 sec
-  //So to speed the motion we will change target by the factor every 20mS.
-  final int FAST_MOTION_FACTOR  = 5;     //20 sec divided by 10 = 2 sec for full travel up or down from center position
+  //So to speed this up,  we will change target by the following respective factors every 20mS.
+  //Changing these values only changes the rate the targets change not the PID response so don't make the 
+  // target change too fast compared to the PID response or the lag the driver sees will make it hard for him to control. 
+  final int FAST_MOTION_FACTOR_ARM    = 5;     // 20 sec / 5 = 4 seconds
+  final int FAST_MOTION_FACTOR_WRIST  = 5;      
   //define the range of digital counts of the pots
   final double ARM_DIGITAL_RANGE   = 1000.0; //range is -1000 to +1000
   final double WRIST_DIGITAL_RANGE = 1000.0;
@@ -30,9 +33,9 @@ public class ArmWrist {
   final double ARM_SAFETY_DOWN       = -1.1;  //@@@ - below this is considered a severed pot wire
   final double ARM_SAFETY_UP         =  1.1;  //@@@ - above this is considered a severed pot wire
 
-  final double WRIST_POT_FULL_UP     =  950;    //@@@ 
+  final double WRIST_POT_FULL_UP     =  950;  //@@@ 
   final double WRIST_POT_FULL_DOWN   = -900;  //@@@ 
-  final double WRIST_POT_STRAIGHT_OUT=   -200; //@@@
+  final double WRIST_POT_STRAIGHT_OUT= -200;  //@@@
   final double WRIST_POT_INITIAL     =  WRIST_POT_FULL_UP; //@@@
   final double WRIST_SAFETY_DOWN     = -1.1;  //@@@ - below this is considered a severed pot wire
   final double WRIST_SAFETY_UP       =  1.1;  //@@@ - above this is considered a severed pot wire
@@ -72,23 +75,16 @@ public class ArmWrist {
   final double WRIST_DRIVE_C        = 0.3;//@@@ see comments above how to determine
   
   //------- poses (There are only a handfull so an array would add more complication than the benifit.) --------
-  final double ARM_POSE_0       = -300; //pick up ball from ground
-  final double WRIST_ARM_POSE_0 =  200;
-  final double ARM_POSE_1       = -250; //hatch level 1
-  final double WRIST_ARM_POSE_1 =  100;
-  final double ARM_POSE_2       = -200; //hatch level 2
-  final double WRIST_ARM_POSE_2 =    0;
-  final double ARM_POSE_3       = -150;//hatch level 3
-  final double WRIST_ARM_POSE_3 = -100;  
+  final double ARM_POSE_0       = -600; //pick up ball from ground
+  final double WRIST_ARM_POSE_0 =  -600;
+  final double ARM_POSE_1       = -700; //hatch level 1
+  final double WRIST_ARM_POSE_1 =  800;
+  final double ARM_POSE_2       = -500; //hatch level 2
+  final double WRIST_ARM_POSE_2 =  600;
+  final double ARM_POSE_3       = -400;//hatch level 3
+  final double WRIST_ARM_POSE_3 =  400;  
   private int poseSelection             = 1;    //initial pose
   final private int POSE_HIGHEST_DEFINED= 3;    //poses 0 to 3 are defined so far
-
-  //Observed values for the pots for a given position 
-  //Static Values (after I term settles)
-  //Values for the WM2019_2nd bot
-  //pot   : target: pid out  
-  //0.2   : 160   : -0.2  full up
-  //-0.73 : -659  : -0.2  full down
   
   //Declare all possible objects here and instantiate what is needed for each bot in constructor
   //Peanut Bot
@@ -113,15 +109,35 @@ public class ArmWrist {
   double wristPositionCurrent    = 0; 
   double wristPositionTarget     = 0;
     
+  
+  //TODO: PID tuning
+  //Back flip issue - Likely cause:
+  // The arm I value was 0.001. Every 20mS, the I term builds by 0.001 * error
+  // This can build to large values (even larger than P term) when the bot is sitting especially with
+  //  motors disconnected.
+  // This I term build up remains even after disabling and enabling teleop mode.
+  //Temp solution implemented the sunday before the competition
+  // I values set to 0
+  // I build up set to 0 when PID crosses 0, also in teleop init
+  //This should prevent the back flips but not get all the way to the target with no I term and only P term
+  //Dont change I values from 0 until the following steps are done (positive up requirement)
+  // 1. pot wiring: black ground, red positive, rotation in up direction increases 
+  // 2. remove all negative signs that were put in to bandaid the code in process PID
+  // 3. full down pot value near -1.0, for arm and wrist
+  // 4. full up pot value near +1.0 for arm and about 0 for the wrist
+  // 5. when target position is more positive than current position, PID out is positive
   MiniPID pidArm;
-  final double P_ARM = 0.99;
-  final double I_ARM = 0.001;
+  final double P_ARM = 1.0;
+  final double I_ARM = 0.0;//keep at zero until all code is positive up
   final double D_ARM = 0.0;
   MiniPID pidWrist;
-  final double P_WRIST = 1;
-  final double I_WRIST = 0.0;
+  final double P_WRIST = 1.0;
+  final double I_WRIST = 0.0;//keep at zero until code is positive up
   final double D_WRIST = 0.0;
   
+  private boolean lastPidValueWasPositiveArm   = false; //mechinism to reset I buildup
+  private boolean lastPidValueWasPositiveWrist = false;
+
   int printCounter = 0; //used to reduce the print frequency
   OurBots selectedBot_local; //copy so we can pass in one in constructor
   
@@ -133,13 +149,11 @@ public class ArmWrist {
     pidArm = new MiniPID(P_ARM,I_ARM,D_ARM);
     pidArm.setSetpoint(0.0);            //center of travel
     pidArm.setDirection(true); //true is reversed
-    pidArm.reset();            //remove any I term build up from last time we used the PID
-    
     //wrist PID
     pidWrist = new MiniPID(P_WRIST,I_WRIST,D_WRIST);
     pidWrist.setSetpoint(0.0);      
-    pidArm.setDirection(true); //true is reversed
-    pidWrist.reset();  
+    pidArm.setDirection(true);  //true is reversed
+    resetPids();                //remove any I term build up from last time we used the PID
     // pots
    potArm   = new AnalogPotentiometer(hMap.potArm, 2 * ARM_DIGITAL_RANGE, 0); //channel, range, offset; [0 to 2000] will map to [-1.0 to +1.0] when read
     potWrist = new AnalogPotentiometer(hMap.potWrist, 2 * WRIST_DIGITAL_RANGE, 0); 
@@ -184,13 +198,13 @@ public class ArmWrist {
     //---- process the arm ------------------
     if(up && armPositionTarget < ARM_POT_FULL_UP)
     {
-      armPositionTarget += FAST_MOTION_FACTOR;
+      armPositionTarget += FAST_MOTION_FACTOR_ARM;
     }
     else
     {
       if(down && armPositionTarget > ARM_POT_FULL_DOWN)
       {
-         armPositionTarget -= FAST_MOTION_FACTOR;
+         armPositionTarget -= FAST_MOTION_FACTOR_ARM;
       }
     }
   }
@@ -202,15 +216,13 @@ public class ArmWrist {
     //---- process the wrist ------------------ 
     if(up && wristPositionTarget < WRIST_POT_FULL_UP)
     {
-      wristPositionTarget += FAST_MOTION_FACTOR;
-      //System.out.println("wrist target up " + wristPositionTarget);
+      wristPositionTarget += FAST_MOTION_FACTOR_WRIST;
     }
     else
     {
       if(down && wristPositionTarget > WRIST_POT_FULL_DOWN)
       {
-        wristPositionTarget -= FAST_MOTION_FACTOR;
-        //System.out.println("wrist target down "  + wristPositionTarget);
+        wristPositionTarget -= FAST_MOTION_FACTOR_WRIST;
       }
     }
   }
@@ -261,9 +273,42 @@ public class ArmWrist {
     }
   }
   
+  public void resetPids()
+  {
+    pidArm.reset();
+    pidWrist.reset();
+  }
+
+  //clear the I term that has build up each time the PID out changes direction
+  private void I_termWindUpProtectionArm(double newPidValue)
+  {
+    if(newPidValue < 0 && lastPidValueWasPositiveArm)
+    {
+      pidArm.reset();
+      lastPidValueWasPositiveArm = false; 
+    }
+    if(newPidValue > 0 && !lastPidValueWasPositiveArm)
+    {
+      pidArm.reset();
+      lastPidValueWasPositiveArm = true; 
+    }
+  }
+  private void I_termWindUpProtectionWrist(double newPidValue)
+  {
+    if(newPidValue < 0 && lastPidValueWasPositiveWrist)
+    {
+      pidWrist.reset();
+      lastPidValueWasPositiveWrist = false; 
+    }
+    if(newPidValue > 0 && !lastPidValueWasPositiveWrist)
+    {
+      pidWrist.reset();
+      lastPidValueWasPositiveWrist = true; 
+    }
+  }
+  
   public void processPIDsAndDriveMotors()
   {
-    //SmartDashboard.putData();
     //----- Read the pots, cycle the PIDs and store the PID outputs  -----------------------------------------------------
     armPositionCurrent   = potArm.get()/ARM_DIGITAL_RANGE - 1.0;  //map [0 to 2.0] to [-1.0 to 1.0]
     wristPositionCurrent = -1*potWrist.get()/WRIST_DIGITAL_RANGE + 1.0; 
@@ -272,6 +317,10 @@ public class ArmWrist {
     //Simple as that :)
     double pidOutputArm   = pidArm.getOutput(armPositionCurrent, armPositionTarget/ARM_DIGITAL_RANGE); //output range is -1000 to +1000
     double pidOutputWrist = pidWrist.getOutput(wristPositionCurrent, wristPositionTarget/WRIST_DIGITAL_RANGE);
+    
+    I_termWindUpProtectionArm(pidOutputArm);    //reset I term wind up when direction changes
+    I_termWindUpProtectionWrist(pidOutputWrist);
+
     //The variable torque caused by the weight of the arm and wrist makes for bad PID behavior so we need to add
     // a feed forward term which is an offset that is dependant of the angles of the joint.
     // 1st determine the joint angles 

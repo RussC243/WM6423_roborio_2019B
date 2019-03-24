@@ -100,7 +100,7 @@ public class Robot extends TimedRobot {
     System.out.printf("teleopInit\n"); 
     armWrist.armPositionTarget = armWrist.ARM_POT_INITIAL;//starting position 
     armWrist.wristPositionTarget = armWrist.WRIST_POT_INITIAL; 
-    
+    armWrist.resetPids();
   }
 
   /**
