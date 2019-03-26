@@ -40,6 +40,18 @@ public class ArmWrist {
   final double WRIST_SAFETY_DOWN     = -1.1;  //@@@ - below this is considered a severed pot wire
   final double WRIST_SAFETY_UP       =  1.1;  //@@@ - above this is considered a severed pot wire
 
+  //The hand can point down to pick up a ball or straight up to place a disk.
+  //The hand should never point further back than straight up to avoid tipping over backwards.
+  //The sum of the targets of the wrist and arm will be limited to the following constant.
+  //This will insure the hand is never pointed back more than straight up.   
+  //The starting position for the hand is straigt up, so the limit is the sum of the starting values.
+  //As the arm and wrist move angles are traded as to not exceed the limit.
+  //Add some margin past this point to allow for inaccuracys.
+  final double HAND_UNDER_EXTEND_MARGIN= 50;
+  final double HAND_UNDER_EXTEND_LIMIT =  ARM_POT_FULL_DOWN + 
+                                          WRIST_POT_FULL_UP +
+                                          HAND_UNDER_EXTEND_MARGIN; //-900 + 950 + 50 = 100              
+
   /*------- values needed to calculated the PID feed forward value to compensate for torque caused by the weight of the arm 
   We will ignore affects of the various wrist positions affecting the torque on the arm joint.
   Once the angle of the arm is known and the relative to the arm is known, we can determine the angle of the wrist
@@ -135,9 +147,6 @@ public class ArmWrist {
   final double I_WRIST = 0.0;//keep at zero until code is positive up
   final double D_WRIST = 0.0;
   
-  private boolean lastPidValueWasPositiveArm   = false; //mechinism to reset I buildup
-  private boolean lastPidValueWasPositiveWrist = false;
-
   int printCounter = 0; //used to reduce the print frequency
   OurBots selectedBot_local; //copy so we can pass in one in constructor
   
@@ -155,7 +164,7 @@ public class ArmWrist {
     pidArm.setDirection(true);  //true is reversed
     resetPids();                //remove any I term build up from last time we used the PID
     // pots
-   potArm   = new AnalogPotentiometer(hMap.potArm, 2 * ARM_DIGITAL_RANGE, 0); //channel, range, offset; [0 to 2000] will map to [-1.0 to +1.0] when read
+    potArm   = new AnalogPotentiometer(hMap.potArm, 2 * ARM_DIGITAL_RANGE, 0); //channel, range, offset; [0 to 2000] will map to [-1.0 to +1.0] when read
     potWrist = new AnalogPotentiometer(hMap.potWrist, 2 * WRIST_DIGITAL_RANGE, 0); 
 
     switch(selectedBot)
@@ -196,6 +205,10 @@ public class ArmWrist {
   { 
     //This function only sets the target values. The processPIDs below drives the motors
     //---- process the arm ------------------
+    if(up && ((wristPositionTarget + armPositionTarget) >= HAND_UNDER_EXTEND_LIMIT))
+    {
+      return;// dont allow hand to point further back than straight up
+    }
     if(up && armPositionTarget < ARM_POT_FULL_UP)
     {
       armPositionTarget += FAST_MOTION_FACTOR_ARM;
@@ -214,6 +227,10 @@ public class ArmWrist {
     //System.out.println("in manual wrist method " + up + " " + down + " " + wristPositionTarget);
     //This function only sets the target values. The processPIDs below drives the motors
     //---- process the wrist ------------------ 
+    if(up && ((wristPositionTarget + armPositionTarget) >= HAND_UNDER_EXTEND_LIMIT))
+    {
+      return;// dont allow hand to point further back than straight up
+    }
     if(up && wristPositionTarget < WRIST_POT_FULL_UP)
     {
       wristPositionTarget += FAST_MOTION_FACTOR_WRIST;
@@ -226,7 +243,6 @@ public class ArmWrist {
       }
     }
   }
-
 
   public void upDownCycle(boolean up, boolean down)
   {
@@ -279,34 +295,6 @@ public class ArmWrist {
     pidWrist.reset();
   }
 
-  //clear the I term that has build up each time the PID out changes direction
-  private void I_termWindUpProtectionArm(double newPidValue)
-  {
-    if(newPidValue < 0 && lastPidValueWasPositiveArm)
-    {
-      pidArm.reset();
-      lastPidValueWasPositiveArm = false; 
-    }
-    if(newPidValue > 0 && !lastPidValueWasPositiveArm)
-    {
-      pidArm.reset();
-      lastPidValueWasPositiveArm = true; 
-    }
-  }
-  private void I_termWindUpProtectionWrist(double newPidValue)
-  {
-    if(newPidValue < 0 && lastPidValueWasPositiveWrist)
-    {
-      pidWrist.reset();
-      lastPidValueWasPositiveWrist = false; 
-    }
-    if(newPidValue > 0 && !lastPidValueWasPositiveWrist)
-    {
-      pidWrist.reset();
-      lastPidValueWasPositiveWrist = true; 
-    }
-  }
-  
   public void processPIDsAndDriveMotors()
   {
     //----- Read the pots, cycle the PIDs and store the PID outputs  -----------------------------------------------------
@@ -317,10 +305,7 @@ public class ArmWrist {
     //Simple as that :)
     double pidOutputArm   = pidArm.getOutput(armPositionCurrent, armPositionTarget/ARM_DIGITAL_RANGE); //output range is -1000 to +1000
     double pidOutputWrist = pidWrist.getOutput(wristPositionCurrent, wristPositionTarget/WRIST_DIGITAL_RANGE);
-    
-    I_termWindUpProtectionArm(pidOutputArm);    //reset I term wind up when direction changes
-    I_termWindUpProtectionWrist(pidOutputWrist);
-
+   
     //The variable torque caused by the weight of the arm and wrist makes for bad PID behavior so we need to add
     // a feed forward term which is an offset that is dependant of the angles of the joint.
     // 1st determine the joint angles 
@@ -389,19 +374,18 @@ public class ArmWrist {
         }
         else
         {
-          armFinalDrive = pidOutputArm;// - ARM_DRIVE_M + armACosTheta;
+          armFinalDrive = pidOutputArm;//TODO - ARM_DRIVE_M + armACosTheta;
         }
         //---- again for the wrist ----
         double wristFinalDrive = 0; 
         if(pidOutputWrist > 0)
         {
-          wristFinalDrive = pidOutputWrist + WRIST_DRIVE_M + wristACosTheta;
+          wristFinalDrive = pidOutputWrist;//TODO + WRIST_DRIVE_M + wristACosTheta;
         }
         else
         {
-          wristFinalDrive = pidOutputWrist - WRIST_DRIVE_M + wristACosTheta;
+          wristFinalDrive = pidOutputWrist;//TODO - WRIST_DRIVE_M + wristACosTheta;
         }
-      
         setArmWithSafetyCheck  (armFinalDrive,   armPositionCurrent);
         setWristWithSafetyCheck(wristFinalDrive, wristPositionCurrent);
         break;
