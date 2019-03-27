@@ -24,7 +24,7 @@ public class Robot extends TimedRobot {
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
-  
+  private boolean initDone = false; //allows not to reset to starting position after auto init
   Joystick        joy       = new Joystick(0);     //popular and generic, IZT brand joystick
   HardwareMap     hMap      = new HardwareMap();   //This defines what inputs and outputs are connectedd to roborio
   DriveTrain      dTrain    = new DriveTrain(selectedBot);
@@ -42,6 +42,9 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
     CameraServer.getInstance().startAutomaticCapture();
+    armWrist.armPositionTarget = armWrist.ARM_POT_INITIAL;//starting position 
+    armWrist.wristPositionTarget = armWrist.WRIST_POT_INITIAL; 
+    armWrist.resetPids();
   }
 
   /**
@@ -55,7 +58,6 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
   }
-
   /**
    * This autonomous (along with the chooser code above) shows how to select
    * between different autonomous modes using the dashboard. The sendable
@@ -72,11 +74,8 @@ public class Robot extends TimedRobot {
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
-    
     System.out.printf("autonomousInit\n"); 
-    armWrist.armPositionTarget = armWrist.ARM_ANGLE_FULL_DOWN;//starting position 
-    armWrist.wristPositionTarget = armWrist.ARM_ANGLE_FULL_UP;
-    linkPack(); //This year driver can drive during autonomous.
+    //** All the needed init was done in robotInit */
   }
 
   /**
@@ -87,10 +86,14 @@ public class Robot extends TimedRobot {
     switch (m_autoSelected) {
       case kCustomAuto:
         // Put custom auto code here
+        linkPack(); //Driver can control this year during autonomous.
+                    //Link the joystick to the hardware.
         break;
       case kDefaultAuto:
       default:
         // Put default auto code here
+        linkPack(); //Driver can control this year during autonomous.
+                    //Link the joystick to the hardware.
         break;
     }
   }
@@ -98,11 +101,8 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     System.out.printf("teleopInit\n"); 
-    armWrist.armPositionTarget = armWrist.ARM_POT_INITIAL;//starting position 
-    armWrist.wristPositionTarget = armWrist.WRIST_POT_INITIAL; 
-    armWrist.resetPids();
+    /**   All the init we needed was done in roboInit. */
   }
-
   /**
    * This function is called periodically during operator control.
    */
