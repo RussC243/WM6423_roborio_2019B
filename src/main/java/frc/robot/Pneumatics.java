@@ -80,7 +80,7 @@ public class Pneumatics
       pneumatic_hatch_push.set(false);
       pneumatic_hatch_pull.set(true);
       pneumatic_hatch_pull.startPulse();
-      System.out.println("hatch Pull");
+    //  System.out.println("hatch Pull");
       hatchReturnConter--;
     }
     else
