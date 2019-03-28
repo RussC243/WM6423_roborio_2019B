@@ -18,7 +18,7 @@ public class Robot extends TimedRobot {
   {
     PEANUT, WM2019_BAG, WM2019_2ND //The peanut is Russ' test bot. The bag bot is the one in the bag. The 2nd is the spare bot
   }
-  final OurBots selectedBot = OurBots.WM2019_2ND; //set the bot to the one you are working with
+  final OurBots selectedBot = OurBots.WM2019_BAG; //set the bot to the one you are working with
 
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
@@ -132,17 +132,17 @@ public class Robot extends TimedRobot {
   {
     if(joy.getRawAxis(hMap.axisTriggerIntakeIn) > 0.1)
     {
-      intake.driveMotorIn(0.7);
+      intake.driveMotorIn();//scale in intake class
     }
     else
     {
       if(joy.getRawAxis(hMap.axisTriggerIntakeOut) > 0.1)
       {
-        intake.driveMotorIn(-0.7);
+        intake.driveMotorOut();//scale in intake class
       }
       else
       {
-        intake.driveMotorIn(0);
+        intake.driveMotorOff();
       }
     }
   }
