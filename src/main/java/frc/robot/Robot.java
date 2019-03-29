@@ -3,9 +3,24 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import org.opencv.core.Mat;
+
+import edu.wpi.cscore.CvSink;
+import edu.wpi.cscore.CvSource;
+import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.UsbCamera;
+import edu.wpi.cscore.VideoMode.PixelFormat;
 import edu.wpi.first.cameraserver.CameraServer;
+
+import edu.wpi.first.wpilibj.vision.VisionPipeline;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.vision.VisionRunner;
+import edu.wpi.first.wpilibj.vision.VisionThread;
+import frc.robot.LPipeline;
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the TimedRobot
@@ -18,7 +33,7 @@ public class Robot extends TimedRobot {
   {
     PEANUT, WM2019_BAG, WM2019_2ND //The peanut is Russ' test bot. The bag bot is the one in the bag. The 2nd is the spare bot
   }
-  final OurBots selectedBot = OurBots.WM2019_2ND; //set the bot to the one you are working with
+  final OurBots selectedBot = OurBots.WM2019_BAG; //set the bot to the one you are working with
 
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
@@ -41,10 +56,30 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);//
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
-    CameraServer.getInstance().startAutomaticCapture();
+  CameraServer.getInstance().startAutomaticCapture();
     armWrist.armPositionTarget = armWrist.ARM_POT_INITIAL;//starting position 
     armWrist.wristPositionTarget = armWrist.WRIST_POT_INITIAL; 
     armWrist.resetPids();
+    
+    /*
+    VisionThread vThread;
+    UsbCamera camera = new UsbCamera("Camera 2", 0);
+    //VisionPipeline l = new LPipeline();
+   
+    //MjpegServer server = new MjpegServer("new server",6423);
+    CvSource source = CameraServer.getInstance().putVideo("new source", 300, 300);
+    vThread = new VisionThread(camera,new LPipeline(), pipeline -> {
+   //CvSink s = CameraServer.getInstance().getVideo();
+        
+          System.out.println("hello vision");
+          source.putFrame(pipeline.desaturateOutput());
+        
+  });
+  vThread.start();
+  */
+  
+  
+  
   }
 
   /**
@@ -130,19 +165,22 @@ public class Robot extends TimedRobot {
   
   public void linkJoyStickToIntake()
   {
-    if(joy.getRawAxis(hMap.axisTriggerIntakeIn) > 0.1)
+    if(joy.getRawAxis(hMap.axisTriggerIntakeIn) > 0.7)
     {
-      intake.driveMotorIn(0.7);
+      intake.driveMotorIn();//scale in intake class
+      //System.out.println("Greater than .7 in");
     }
     else
     {
-      if(joy.getRawAxis(hMap.axisTriggerIntakeOut) > 0.1)
+      if(joy.getRawAxis(hMap.axisTriggerIntakeOut) > 0.7)
       {
-        intake.driveMotorIn(-0.7);
+        intake.driveMotorOut();//scale in intake class
+        //System.out.println("Greater than .7 out");
       }
       else
       {
-        intake.driveMotorIn(0);
+        intake.driveMotorOff();
+        //System.out.println("Off");
       }
     }
   }

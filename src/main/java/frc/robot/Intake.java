@@ -14,15 +14,16 @@ public class Intake
     hMap = new HardwareMap();
     intakeMotor = new Spark(hMap.motorIntake);
   }
-  public void driveMotorIn(double motorDriveValue)
+  public void driveMotorIn()
   {
-     if(Math.abs(motorDriveValue)>0.1) //don't creep
-     {
-        intakeMotor.set(DRIVE_SCALE * motorDriveValue);
-     }
-     else
-     {
-        intakeMotor.set(0);
-     }
+     intakeMotor.set(DRIVE_SCALE);
+  }
+  public void driveMotorOut()
+  {
+     intakeMotor.set(-DRIVE_SCALE);
+  }
+  public void driveMotorOff()
+  {
+     intakeMotor.set(0);
   }
 }

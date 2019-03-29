@@ -87,17 +87,17 @@ public class ArmWrist {
   final double WRIST_DRIVE_C        = 0.28;//@@@ see comments above how to determine
   
   //------- poses (There are only a handfull so an array would add more complication than the benifit.) --------
-  final double ARM_POSE_0       =  -475; //pick up ball from ground
-  final double WRIST_ARM_POSE_0 =  -650;
+  final double ARM_POSE_0       =  -450; //pick up ball from ground
+  final double WRIST_ARM_POSE_0 =  -625;
   //-----------------------------------------------------------------
   final double ARM_POSE_1       = -805; //hatch level 1
-  final double WRIST_ARM_POSE_1 =  915;
+  final double WRIST_ARM_POSE_1 =  955;
   //-----------------------------------------------------------------
   final double ARM_POSE_2       = -425; //hatch level 2
-  final double WRIST_ARM_POSE_2 =  575;
+  final double WRIST_ARM_POSE_2 =  605;
   //-----------------------------------------------------------------
   final double ARM_POSE_3       =  5;//hatch level 3
-  final double WRIST_ARM_POSE_3 =  170;  
+  final double WRIST_ARM_POSE_3 =  210;  
   //-----------------------------------------------------------------
   private int poseSelection             = 1;    //initial pose
   final private int POSE_HIGHEST_DEFINED= 3;    //poses 0 to 3 are defined so far
@@ -207,7 +207,7 @@ public class ArmWrist {
                                         //Right arm motor drives in reverse from left, so invert
         wrist = new Spark(5);      
         wrist.setInverted(true);        //invert so positive is up
-        armGroup = new SpeedControllerGroup(armLeft_2nd, armRight_2nd); 
+        armGroup = new SpeedControllerGroup(armLeft_bag, armRight_bag); 
         armGroup.set(0);
         wrist.set(0);
         break;
@@ -402,7 +402,7 @@ public class ArmWrist {
         break;
       case WM2019_BAG:
       case WM2019_2ND:
-        //See comments is top of this file to understand feed forward terms
+        //See comments at top of this file to understand feed forward terms
         //When PidOut is positive to raise arm: F = PidOut + M + A cos(theta) 
         //When PidOut is negative to lower arm: F = PidOut - M + A cos(theta) 
         //---- determine final drive F for the arm ---------------------------
@@ -433,12 +433,11 @@ public class ArmWrist {
     }
   }
 
-  /** This method checks to makes sure the arm pot sensor wire is not broken then drives the motors */
+  /** This method checks to make sure the arm pot sensor wire is not broken then drives the motors */
   private void setArmWithSafetyCheck(double driveValue, double potValueSafetyCheckValue)
   {
     if(potValueSafetyCheckValue < ARM_SAFETY_UP && potValueSafetyCheckValue > ARM_SAFETY_DOWN)
     {
-      //0.19 moves against friction, 0.28 moves against friction and gravity
       armGroup.set(driveValue); 
       //System.out.printf("final arm drive is %.2f\n", driveValue);
     }
@@ -455,7 +454,6 @@ public class ArmWrist {
     if(potValueSafetyCheckValue > WRIST_SAFETY_DOWN && potValueSafetyCheckValue < WRIST_SAFETY_UP)
     {
      // System.out.printf("final wrist drive is %.2f\n", driveValue);
-     //0.19 moves against friction, 0.28 moves against friction and gravity
      wrist.set(driveValue); //negative drive rasies wrist so ***negate it here ONLY***
     }
     else
