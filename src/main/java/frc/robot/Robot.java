@@ -165,31 +165,22 @@ public class Robot extends TimedRobot {
   
   public void linkJoyStickToIntake()
   {
+    //One of team's joystick controllers changed from 0.5 to 1.0 not 0.0 to 1.0 when trigger was pressed
+    //Russ' controller changed from 0.0 to 1.0
+    //So... 0.7 works for both cases
     if(joy.getRawAxis(hMap.axisTriggerIntakeIn) > 0.7)
-    {
+    {                               
       intake.driveMotorIn();//scale in intake class
-<<<<<<< HEAD
-      //System.out.println("Greater than .7 in");
-=======
->>>>>>> ab46fbddcca03dbf3434af0e8c04b691647ded89
     }
     else
     {
       if(joy.getRawAxis(hMap.axisTriggerIntakeOut) > 0.7)
       {
         intake.driveMotorOut();//scale in intake class
-<<<<<<< HEAD
-        //System.out.println("Greater than .7 out");
-=======
->>>>>>> ab46fbddcca03dbf3434af0e8c04b691647ded89
       }
       else
       {
         intake.driveMotorOff();
-<<<<<<< HEAD
-        //System.out.println("Off");
-=======
->>>>>>> ab46fbddcca03dbf3434af0e8c04b691647ded89
       }
     }
   }
