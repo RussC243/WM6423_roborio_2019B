@@ -168,19 +168,28 @@ public class Robot extends TimedRobot {
     if(joy.getRawAxis(hMap.axisTriggerIntakeIn) > 0.7)
     {
       intake.driveMotorIn();//scale in intake class
+<<<<<<< HEAD
       //System.out.println("Greater than .7 in");
+=======
+>>>>>>> ab46fbddcca03dbf3434af0e8c04b691647ded89
     }
     else
     {
       if(joy.getRawAxis(hMap.axisTriggerIntakeOut) > 0.7)
       {
         intake.driveMotorOut();//scale in intake class
+<<<<<<< HEAD
         //System.out.println("Greater than .7 out");
+=======
+>>>>>>> ab46fbddcca03dbf3434af0e8c04b691647ded89
       }
       else
       {
         intake.driveMotorOff();
+<<<<<<< HEAD
         //System.out.println("Off");
+=======
+>>>>>>> ab46fbddcca03dbf3434af0e8c04b691647ded89
       }
     }
   }
