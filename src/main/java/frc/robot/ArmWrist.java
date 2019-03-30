@@ -17,10 +17,12 @@ public class ArmWrist {
   //Changing these values only changes the rate the targets change not the PID response so don't make the 
   // target change too fast compared to the PID response or the lag the driver sees will make it hard for him to control. 
   final int FAST_MOTION_FACTOR_ARM    = 5;     // 20 sec / 5 = 4 seconds
-  final int FAST_MOTION_FACTOR_WRIST  = 8;     //increase to make faster
+  final int FAST_MOTION_FACTOR_WRIST  = 14;     //increase to make faster
   //define the range of digital counts of the pots
   final double ARM_DIGITAL_RANGE   = 1000.0; //range is -1000 to +1000
   final double WRIST_DIGITAL_RANGE = 1000.0;
+
+  //final double WRIST_MOVE_FACTOR = 0.7;
   
   //*************************************************************************************************************************
   //values with comments starting with @@@ must be determied empirically for each robot each time the pot set screw is tightned   
@@ -34,10 +36,10 @@ public class ArmWrist {
   final double ARM_SAFETY_DOWN       = -1.1;  //@@@ - below this is considered a severed pot wire
   final double ARM_SAFETY_UP         =  1.1;  //@@@ - above this is considered a severed pot wire
 
-  final double WRIST_POT_FULL_UP     =   980;  //@@@ 
+  final double WRIST_POT_FULL_UP     =   810;  //@@@ 
   final double WRIST_POT_FULL_DOWN   =  -910;  //@@@ 
   final double WRIST_POT_STRAIGHT_OUT=  -190;  //@@@
-  final double WRIST_POT_INITIAL     =  WRIST_POT_FULL_UP; //@@@
+  final double WRIST_POT_INITIAL     =  WRIST_POT_FULL_UP-50; //@@@
   final double WRIST_SAFETY_DOWN     =  -1.01;  //@@@ - below this is considered a severed pot wire
   final double WRIST_SAFETY_UP       =   1.01;  //@@@ - above this is considered a severed pot wire
 
@@ -91,8 +93,8 @@ public class ArmWrist {
   final double WRIST_ARM_POSE_0 =  -625;
   //-----------------------------------------------------------------
   final double ARM_POSE_1       = -805; //hatch level 1
-  final double WRIST_ARM_POSE_1 =  955;
-  //-----------------------------------------------------------------
+  final double WRIST_ARM_POSE_1 =  755;
+  //----------------------------------------------------------------
   final double ARM_POSE_2       = -425; //hatch level 2
   final double WRIST_ARM_POSE_2 =  605;
   //-----------------------------------------------------------------
@@ -100,7 +102,7 @@ public class ArmWrist {
   final double WRIST_ARM_POSE_3 =  210;  
   //-----------------------------------------------------------------
   private int poseSelection             = 1;    //initial pose
-  final private int POSE_HIGHEST_DEFINED= 3;    //poses 0 to 3 are defined so far
+  final private int POSE_HIGHEST_DEFINED= 1;    //poses 0 to 3 are defined so far
   //----- When cycling poses, both buttons must be released for 1 sec before a subsequant pose change
   int poseLockOutTimer = 0;
   int POSE_LOCKOUT_TIME = 30; //30 * 20mS = 600mS
@@ -152,7 +154,7 @@ public class ArmWrist {
   final double I_ARM = 0.01;
   final double D_ARM = 0.0;
   MiniPID pidWrist;
-  final double P_WRIST = 0.75;
+  final double P_WRIST = 3;
   final double I_WRIST = 0.006;
   final double D_WRIST = 0.0;
   
@@ -216,8 +218,9 @@ public class ArmWrist {
 
   public void upDownManualArmWrist(boolean up, boolean down)
   {
-    upDownManualArm(up, down);
-    upDownManualWrist(up, down);
+    
+    //upDownManualArm(up, down);
+    //upDownManualWrist(up, down);
   }
   public void upDownManualArm(boolean up, boolean down)
   { 
@@ -242,6 +245,7 @@ public class ArmWrist {
 
   public void upDownManualWrist(boolean up, boolean down)
   { 
+    /*
     //System.out.println("in manual wrist method " + up + " " + down + " " + wristPositionTarget);
     //This function only sets the target values. The processPIDs below drives the motors
     //---- process the wrist ------------------ 
@@ -255,10 +259,31 @@ public class ArmWrist {
     }
     else
     {
-      if(down && wristPositionTarget > WRIST_POT_FULL_DOWN)
+      if(down && wristPositionTarget > 500)
       {
         wristPositionTarget -= FAST_MOTION_FACTOR_WRIST;
       }
+    }
+    */
+    //Boggle
+    if(up)
+    {
+      System.out.println("up");
+      wrist.set(0.65);
+    }
+    else
+    {
+      if(down)
+      {
+        System.out.println("down");
+        wrist.set(-0.8);
+      }
+      else
+      {
+        System.out.println("no movement");
+        wrist.set(0);
+      }
+
     }
   }
 
@@ -274,7 +299,7 @@ public class ArmWrist {
       }
       else
       {
-        acceptButtonRequest = true;
+        acceptButtonRequest = true; 
       }
     }
     //---- process the pose selection-----------------
@@ -427,8 +452,8 @@ public class ArmWrist {
         {
           wristFinalDrive = pidOutputWrist - WRIST_DRIVE_M + wristACosTheta;
         }
-        setArmWithSafetyCheck  (armFinalDrive,   armPositionCurrent);
-        setWristWithSafetyCheck(wristFinalDrive, wristPositionCurrent);
+        //setArmWithSafetyCheck  (armFinalDrive,   armPositionCurrent);
+        //setWristWithSafetyCheck(wristFinalDrive, wristPositionCurrent);
         break;
     }
   }
@@ -464,7 +489,7 @@ public class ArmWrist {
   }
 
   /** This method calculates the angle in degrees of the joint with 0 being horizontal.
-   *  It is simply the full angle times a ratio of pot values.
+   *  It is simpaly the full angle times a ratio of pot values.
    *  Positive angle returned when joint is up   from straight out.
    *  Negative angle returned when joint is down from straight out
    */

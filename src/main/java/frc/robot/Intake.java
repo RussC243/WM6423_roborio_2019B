@@ -7,7 +7,8 @@ public class Intake
 {
   HardwareMap hMap;
   Spark  intakeMotor;
-  double DRIVE_SCALE = 0.7;
+  double DRIVE_SCALE_IN = 0.7;
+  double DRIVE_SCALE_OUT = 1;
   
   public Intake()//constructor
   {
@@ -16,11 +17,11 @@ public class Intake
   }
   public void driveMotorIn()
   {
-     intakeMotor.set(DRIVE_SCALE);
+     intakeMotor.set(DRIVE_SCALE_IN);
   }
   public void driveMotorOut()
   {
-     intakeMotor.set(-DRIVE_SCALE);
+     intakeMotor.set(-DRIVE_SCALE_OUT);
   }
   public void driveMotorOff()
   {

@@ -22,6 +22,8 @@ public class HardwareMap {
   //Pneumatic Solonoids value for solenoid values. connected to pneumatic controller, PCM 
   public  final int pnuematic_hatch_pull  = 0;
   public  final int pnuematic_hatch_push  = 1;
+  public  final int pneumatic_climb_extend = 2;
+  public final int pneumatic_climb_retract = 3;
   // compressors
   public  final int pneumaticCompressor = 0 ;
   // sensors
@@ -58,11 +60,11 @@ public class HardwareMap {
   //Caution: Pressing two buttons at one time returns 45 degree values.
   //Example: Pressing down and left returns 225. 
   private final int povUp           = 0;
-  public  final int povUp_NOT_USED  = povUp;
+  public  final int povClimbExtend  = povUp;
   private final int povRight        = 90;
   public  final int povHatchPull    = povRight;
   private final int povDown         = 180;
-  public  final int povDown_NOT_USED= povDown;
+  public  final int povClimbRetract= povDown;
   private final int povLeft         = 270;
   public  final int povHatchPush    = povLeft;
   

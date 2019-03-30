@@ -20,13 +20,18 @@ import frc.robot.Robot.OurBots;
 public class Pneumatics 
 {
   private final double PULSE_DURATION = 0.1;   // in seconds. 
+  private final double PULSE_DURATION_CLIMB = 0.1;
   private final double MOTOR_CURRENT_LIMIT = 3; // to avoid burning out a stalled motor
   private final double HATCH_RETURN_TIME = 50; //20mS * 50 = 1000mS
+  private final double CLIMB_RETURN_TIME = 100;
   private double hatchReturnConter = HATCH_RETURN_TIME;
+  private double climbReturnCounter = CLIMB_RETURN_TIME;
   HardwareMap hMap; 
   OurBots  selectedBots_pnuematics_local; //copy of constructor argument if needed by class methods 
   Solenoid pneumatic_hatch_pull;  //-
   Solenoid pneumatic_hatch_push;  //-
+  Solenoid pneumatic_climb_extend;  //-
+  Solenoid pneumatic_climb_retract;
   PowerDistributionPanel panel;   // to check for motor current. 
 
   public Pneumatics(OurBots selectedBot)//constructor
@@ -45,11 +50,26 @@ public class Pneumatics
       //Compressor code is handled internally. Make Solenoid objects and features from there. 
       pneumatic_hatch_pull = new Solenoid(hMap.canID_PCM, hMap.pnuematic_hatch_pull);
       pneumatic_hatch_push = new Solenoid(hMap.canID_PCM, hMap.pnuematic_hatch_push); 
+      
+      // instantiating pneumatic climb
+       pneumatic_climb_extend = new Solenoid(hMap.canID_PCM, hMap.pneumatic_climb_extend);
+      pneumatic_climb_retract = new Solenoid(hMap.canID_PCM, hMap.pneumatic_climb_retract); 
+       
+      
+      
       //Set up the newly created objects
       pneumatic_hatch_pull.setPulseDuration(PULSE_DURATION);  
       pneumatic_hatch_pull.startPulse(); //pulse generated. 
       pneumatic_hatch_push.setPulseDuration(PULSE_DURATION);
-      pneumatic_hatch_push.startPulse(); 
+      pneumatic_hatch_push.startPulse();
+      
+      // setting up pulse duration on pneumatic climb
+      pneumatic_climb_extend.setPulseDuration(PULSE_DURATION);  
+      pneumatic_climb_extend.startPulse(); //pulse generated. 
+      pneumatic_climb_retract.setPulseDuration(PULSE_DURATION);
+      pneumatic_climb_retract.startPulse();
+      
+      
       break;
     }
   }//end constructor
@@ -63,6 +83,15 @@ public class Pneumatics
   public void hatchPullOff()  
   {
     pneumatic_hatch_pull.set(false);
+  }
+  public void climbExtendOff()
+  {
+
+    pneumatic_climb_extend.set(false);
+  }
+  public void climbRetractOff()
+  {
+    pneumatic_climb_retract.set(false);
   }
   
   public void hatchPush()  
@@ -89,6 +118,25 @@ public class Pneumatics
       hatchPushOff();
     }
   }
+
+  public void climb()  
+  {
+    pneumatic_climb_retract.set(false);  
+    pneumatic_climb_extend.set(true);
+    pneumatic_climb_extend.startPulse();
+    //hold value at max
+    System.out.println("climbing");
+  }
+  public void retract()  
+  {
+    
+      pneumatic_climb_extend.set(false);
+      pneumatic_climb_retract.set(true);
+      pneumatic_climb_retract.startPulse();
+     System.out.println("hatch Pull");
+
+  }
+    
     
   //place holder method... add 5 more if needed
   public void setSolenoidPulseTimes(double duration) 

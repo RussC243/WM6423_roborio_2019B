@@ -60,7 +60,7 @@ public class Robot extends TimedRobot {
     armWrist.armPositionTarget = armWrist.ARM_POT_INITIAL;//starting position 
     armWrist.wristPositionTarget = armWrist.WRIST_POT_INITIAL; 
     armWrist.resetPids();
-    
+    air.retract();
     /*
     VisionThread vThread;
     UsbCamera camera = new UsbCamera("Camera 2", 0);
@@ -110,6 +110,9 @@ public class Robot extends TimedRobot {
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
     System.out.printf("autonomousInit\n"); 
+    armWrist.armPositionTarget = armWrist.ARM_POSE_1;//starting position 
+    armWrist.wristPositionTarget = armWrist.WRIST_ARM_POSE_1;
+     
     //** All the needed init was done in robotInit */
   }
 
@@ -165,31 +168,22 @@ public class Robot extends TimedRobot {
   
   public void linkJoyStickToIntake()
   {
+    //One of team's joystick controllers changed from 0.5 to 1.0 not 0.0 to 1.0 when trigger was pressed
+    //Russ' controller changed from 0.0 to 1.0
+    //So... 0.7 works for both cases
     if(joy.getRawAxis(hMap.axisTriggerIntakeIn) > 0.7)
-    {
+    {                               
       intake.driveMotorIn();//scale in intake class
-<<<<<<< HEAD
-      //System.out.println("Greater than .7 in");
-=======
->>>>>>> ab46fbddcca03dbf3434af0e8c04b691647ded89
     }
     else
     {
       if(joy.getRawAxis(hMap.axisTriggerIntakeOut) > 0.7)
       {
         intake.driveMotorOut();//scale in intake class
-<<<<<<< HEAD
-        //System.out.println("Greater than .7 out");
-=======
->>>>>>> ab46fbddcca03dbf3434af0e8c04b691647ded89
       }
       else
       {
         intake.driveMotorOff();
-<<<<<<< HEAD
-        //System.out.println("Off");
-=======
->>>>>>> ab46fbddcca03dbf3434af0e8c04b691647ded89
       }
     }
   }
@@ -201,18 +195,34 @@ public class Robot extends TimedRobot {
   {
     armWrist.upDownManualArm  (joy.getRawButton(hMap.buttonArmWristManualUp), joy.getRawButton(hMap.buttonArmWristManualDown));
     armWrist.upDownManualWrist(joy.getRawButton(hMap.buttonWristManualUp),    joy.getRawButton(hMap.buttonWristManualDown));
-    armWrist.upDownCycle      (joy.getRawButton(hMap.buttonArmWristCycleUp),  joy.getRawButton(hMap.buttonArmWristCycleDown)); 
+    //armWrist.upDownCycle      (joy.getRawButton(hMap.buttonArmWristCycleUp),  joy.getRawButton(hMap.buttonArmWristCycleDown)); 
   }
   public void linkJoyStickToPneumatics()
   {
     //---- Control the hatch pistons. ------------------
-    if(joy.getPOV() == (hMap.povHatchPush))
+    if(joy.getPOV() == (hMap.povHatchPush) )
     {
       air.hatchPush(); //if button pushed, push hatch
+      armWrist.upDownManualWrist(joy.getPOV() == 270,false);
     }
     else
     {
       air.hatchPull(); //else pull it in for 1 second
     }
+    
+    if(joy.getPOV() == (hMap.povClimbExtend))
+    {
+      air.climb();
+    }
+    else
+    {
+      if(joy.getPOV() == (hMap.povClimbRetract))
+        air.retract();
+      else
+        air.climbExtendOff();
+        air.climbRetractOff();
+
+    }
+    
   }
 }
