@@ -194,7 +194,7 @@ public class Robot extends TimedRobot {
   public void linkJoyStickToArmWrist()
   {
     armWrist.upDownManualArm  (joy.getRawButton(hMap.buttonArmWristManualUp), joy.getRawButton(hMap.buttonArmWristManualDown));
-    armWrist.upDownManualWrist(joy.getRawButton(hMap.buttonWristManualUp),    joy.getRawButton(hMap.buttonWristManualDown));
+    armWrist.upDownManualWrist(joy.getRawButton(hMap.buttonWristManualUp),    joy.getRawButton(hMap.buttonWristManualDown),joy.getRawButton(hMap.buttonArmWristCycleUp));
     //armWrist.upDownCycle      (joy.getRawButton(hMap.buttonArmWristCycleUp),  joy.getRawButton(hMap.buttonArmWristCycleDown)); 
   }
   public void linkJoyStickToPneumatics()
@@ -203,7 +203,7 @@ public class Robot extends TimedRobot {
     if(joy.getPOV() == (hMap.povHatchPush) )
     {
       air.hatchPush(); //if button pushed, push hatch
-      armWrist.upDownManualWrist(joy.getPOV() == 270,false);
+    //  armWrist.upDownManualWrist(joy.getPOV() == 270,false, false);///why?
     }
     else
     {

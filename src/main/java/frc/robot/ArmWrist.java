@@ -243,7 +243,7 @@ public class ArmWrist {
     }
   }
 
-  public void upDownManualWrist(boolean up, boolean down)
+  public void upDownManualWrist(boolean up, boolean down, boolean holdBack)
   { 
     /*
     //System.out.println("in manual wrist method " + up + " " + down + " " + wristPositionTarget);
@@ -269,21 +269,27 @@ public class ArmWrist {
     if(up)
     {
       System.out.println("up");
-      wrist.set(0.65);
+      wrist.set(0.35);
     }
     else
     {
       if(down)
       {
         System.out.println("down");
-        wrist.set(-0.8);
+        wrist.set(-0.5);
       }
       else
       {
-        System.out.println("no movement");
-        wrist.set(0);
+        if(holdBack)
+        {
+          wrist.set(0.25);
+        }
+        else
+        {
+          System.out.println("no movement");
+          wrist.set(0);
+        }
       }
-
     }
   }
 
